@@ -14,7 +14,7 @@
 
 ```bash
 # Se placer dans le dossier du projet
-cd e:\smartGestion\AfriqueDATAv2
+cd e:\smartGestion\SmartGestion
 
 # Initialiser Git (si pas déjà fait)
 git init

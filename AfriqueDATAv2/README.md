@@ -5,7 +5,7 @@ Structure minimale pour démarrer un nouveau projet (React + Express).
 ## Structure
 
 ```
-AfriqueDATAv2/
+SmartGestion/
 ├── backend/          # API Express
 │   ├── index.js
 │   └── package.json

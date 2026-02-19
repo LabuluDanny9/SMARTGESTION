@@ -47,7 +47,7 @@ Système d’analytics orienté BI pour la Salle du Numérique UNILU.
 ## Exécution de la migration
 
 ```bash
-cd AfriqueDATAv2
+cd SmartGestion
 npx supabase db push
 # ou
 psql $DATABASE_URL -f supabase/migrations/011_analytics_views.sql

@@ -42,7 +42,7 @@ Ouvre http://localhost:3000
 
 ```
 smartGestion/
-├── AfriqueDATAv2/
+├── SmartGestion/
 │   ├── frontend/          # React + Tailwind + Supabase
 │   │   └── src/
 │   │       ├── components/
