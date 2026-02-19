@@ -61,3 +61,4 @@ smartGestion/
 - Supabase (Auth, Database)
 - QRCode.react, xlsx, jspdf, recharts, lucide-react
 # SMARTGESTION
+# SmartGestion
