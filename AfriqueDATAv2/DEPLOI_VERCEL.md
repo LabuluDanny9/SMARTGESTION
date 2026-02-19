@@ -29,7 +29,7 @@ git push -u origin main
 3. Importez votre dépôt GitHub.
 4. **Important** : définissez le **Root Directory** :
    - Cliquez sur **Edit** à côté de "Root Directory".
-   - Choisissez : `SmartGestion/frontend`
+   - Choisissez : `AfriqueDATAv2/frontend` ou `SmartGestion/frontend` (selon le nom de votre dossier).
    - Validez.
 
 ---
@@ -71,6 +71,28 @@ Dans le dashboard Supabase → **Authentication** → **URL Configuration** :
 ## 7. Mises à jour
 
 Chaque `git push` sur la branche `main` déclenche un nouveau déploiement automatique.
+
+---
+
+## Dépannage 404 NOT_FOUND
+
+Si vous voyez **404: NOT_FOUND** après le déploiement :
+
+1. **Root Directory** : Vercel → Settings → General → Root Directory  
+   Doit être : `AfriqueDATAv2/frontend` (ou `SmartGestion/frontend`)
+
+2. **Output Directory** : doit être `build` (Create React App)
+
+3. **Build Command** : `npm run build`
+
+4. **Rewrites SPA** : le fichier `vercel.json` doit contenir :
+   ```json
+   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+   ```
+
+5. **Variables d'environnement** : si le build échoue, vérifiez que `REACT_APP_SUPABASE_URL` et `REACT_APP_SUPABASE_ANON_KEY` sont définies.
+
+6. **Logs** : Vercel → Deployments → cliquer sur le déploiement → voir les logs de build.
 
 ---
 
