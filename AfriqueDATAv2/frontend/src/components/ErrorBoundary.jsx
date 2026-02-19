@@ -19,7 +19,7 @@ export default class ErrorBoundary extends Component {
             <h1 className="text-danger mb-3">Erreur</h1>
             <p className="text-muted mb-3">{String(this.state.error?.message || this.state.error)}</p>
             <p className="small text-muted">
-              Vérifiez que les variables d'environnement (REACT_APP_SUPABASE_URL, REACT_APP_SUPABASE_ANON_KEY) sont configurées sur Vercel.
+              Vercel → Settings → Environment Variables → ajoutez REACT_APP_SUPABASE_URL et REACT_APP_SUPABASE_ANON_KEY, puis redéployez.
             </p>
             <button
               type="button"
