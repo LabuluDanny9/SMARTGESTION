@@ -1,0 +1,7 @@
+{
+  "name": "smart-gestion",
+  "private": true,
+  "scripts": {
+    "build": "cd AfriqueDATAv2/frontend && npm install && npm run build"
+  }
+}
