@@ -60,9 +60,9 @@ export default function Sidebar({ collapsed, onToggle, onNavigate, mobile }) {
         <div className={`d-flex align-items-center ${collapsed ? 'justify-content-center' : 'gap-2'}`}>
           <img src="/logo-salle-numerique.png" alt="Salle du Numérique" className="rounded flex-shrink-0" style={{ width: 40, height: 40, objectFit: 'contain' }} />
           {!collapsed && (
-            <div className="min-w-0 flex-grow-1">
-              <h6 className="mb-0 fw-bold text-dark text-truncate">SMART GESTION</h6>
-              <small className="text-muted text-truncate d-block">Salle du Numérique</small>
+            <div className="min-w-0 flex-grow-1 sidebar-brand">
+              <h6 className="mb-0 fw-bold text-truncate">SMART GESTION</h6>
+              <small className="text-truncate d-block">Salle du Numérique</small>
             </div>
           )}
         </div>
@@ -72,7 +72,7 @@ export default function Sidebar({ collapsed, onToggle, onNavigate, mobile }) {
         {sectionsConfig.map((section) => (
           <div key={section.label || 'main'} className="mb-3">
             {section.label && !collapsed && (
-              <div className="px-3 mb-1 small text-uppercase text-muted fw-semibold">{section.label}</div>
+              <div className="px-3 mb-1 small text-uppercase sidebar-section-label">{section.label}</div>
             )}
             {section.items.map(({ path, icon, label, badgeKey }) => {
               const count = badgeKey ? badges[badgeKey] : null;
@@ -104,7 +104,7 @@ export default function Sidebar({ collapsed, onToggle, onNavigate, mobile }) {
 
       {!mobile && (
         <div className="p-2 border-top">
-          <Button variant="link" size="sm" className="w-100 d-flex align-items-center justify-content-center gap-2 text-muted text-decoration-none p-2" onClick={onToggle}>
+          <Button variant="link" size="sm" className="w-100 d-flex align-items-center justify-content-center gap-2 text-dark text-decoration-none p-2" onClick={onToggle}>
             <i className={`bi bi-chevron-${collapsed ? 'right' : 'left'}`} />
             {!collapsed && <span className="small">Réduire</span>}
           </Button>

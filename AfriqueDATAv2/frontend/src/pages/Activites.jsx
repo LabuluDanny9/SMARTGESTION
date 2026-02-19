@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Button, Modal, Form } from 'react-bootstrap';
 import { supabase } from '../lib/supabase';
 import { getRegistrationUrl } from '../lib/registrationUrl';
-import { Plus, FileSpreadsheet, FileText, ChevronRight, Copy, Pencil, Trash2 } from 'lucide-react';
+import { Plus, ChevronRight, Copy, Pencil, Trash2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import toast from 'react-hot-toast';
 
@@ -228,19 +229,19 @@ export default function Activites() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Activités</h1>
-          <p className="text-slate-500 text-sm mt-1">Programmer et gérer les activités de la Salle du Numérique</p>
+          <h1 className="h4 fw-bold text-dark mb-1">Activités</h1>
+          <p className="text-muted small mb-0">Programmer et gérer les activités de la Salle du Numérique</p>
         </div>
-        <button onClick={openCreate} className="btn-primary">
-          <Plus className="w-4 h-4" /> Nouvelle activité
-        </button>
+        <Button variant="primary" size="lg" onClick={openCreate} className="d-flex align-items-center gap-2 shadow-sm">
+          <Plus className="w-5 h-5" /> Nouvelle activité
+        </Button>
       </div>
 
       {/* Activity cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {activities.map((a) => (
+        {activities.filter(Boolean).map((a) => (
           <div
             key={a.id}
             className="group relative bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-md hover:border-primary-100 transition-all duration-200"
@@ -260,45 +261,50 @@ export default function Activites() {
                 </span>
               </div>
             </Link>
-            <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-              <button
+            <div className="position-absolute top-0 end-0 d-flex gap-1 p-2" style={{ zIndex: 10 }}>
+              <Button
+                variant="light"
+                size="sm"
+                className="p-2 text-secondary"
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); openEdit(a); }}
-                className="p-2 rounded-lg text-slate-500 hover:bg-primary-50 hover:text-primary-600 transition-colors"
                 title="Modifier"
               >
                 <Pencil className="w-4 h-4" />
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="light"
+                size="sm"
+                className="p-2 text-danger"
                 onClick={(e) => handleDelete(a, e)}
-                className="p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors"
                 title="Supprimer"
               >
                 <Trash2 className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           </div>
         ))}
       </div>
 
       {activities.length === 0 && (
-        <div className="bg-white rounded-2xl border border-slate-100 p-12 text-center">
-          <p className="text-slate-400 text-sm">Aucune activité.</p>
-          <button onClick={openCreate} className="mt-4 text-primary-600 hover:text-primary-700 font-medium text-sm">
-            Créer une activité →
-          </button>
+        <div className="bg-white rounded-3 border p-5 p-md-5 text-center">
+          <p className="text-muted mb-3">Aucune activité.</p>
+          <Button variant="primary" onClick={openCreate} className="d-inline-flex align-items-center gap-2">
+            <Plus className="w-4 h-4" /> Créer une activité
+          </Button>
         </div>
       )}
 
       {/* Create / Edit modal */}
-      {modal.open && modal.mode === 'form' && (
-        <div className="modal-overlay" onClick={() => setModal({ open: false, mode: 'form', item: null })}>
-          <div className="modal-content max-w-lg" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-semibold text-slate-800 mb-4">
-              {modal.item ? 'Modifier l\'activité' : 'Nouvelle activité'}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
+      <Modal show={modal.open && modal.mode === 'form'} onHide={() => setModal({ open: false, mode: 'form', item: null })} centered size="lg" className="rounded-3">
+        <Modal.Header closeButton className="border-0 pb-0">
+          <Modal.Title className="h5 fw-bold">
+            {modal.item ? "Modifier l'activité" : 'Nouvelle activité'}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="pt-0">
+            <Form onSubmit={handleSubmit} className="d-flex flex-column gap-3">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Titre</label>
+                <Form.Label className="fw-medium mb-2">Titre</Form.Label>
                 <input
                   type="text"
                   value={form.nom}
@@ -309,8 +315,8 @@ export default function Activites() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Faculté</label>
-                <div className="space-y-2">
+                <Form.Label className="fw-medium mb-2">Faculté</Form.Label>
+                <div className="d-flex flex-column gap-2">
                   <select
                     value={form.faculty_id}
                     onChange={(e) => setForm({ ...form, faculty_id: e.target.value, department_id: '', promotion_id: '', formateur_id: '' })}
@@ -351,7 +357,7 @@ export default function Activites() {
               </div>
               {form.faculty_id && formateursByFaculty.length > 0 && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Formateur superviseur</label>
+                  <Form.Label className="fw-medium mb-2">Formateur superviseur</Form.Label>
                   <select
                     value={form.formateur_id}
                     onChange={(e) => setForm({ ...form, formateur_id: e.target.value })}
@@ -366,7 +372,7 @@ export default function Activites() {
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Type</label>
+                <Form.Label className="fw-medium mb-2">Type</Form.Label>
                 <select
                   value={form.type_id}
                   onChange={(e) => setForm({ ...form, type_id: e.target.value })}
@@ -379,7 +385,7 @@ export default function Activites() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Date</label>
+                <Form.Label className="fw-medium mb-2">Date</Form.Label>
                 <input
                   type="date"
                   value={form.date_debut}
@@ -388,9 +394,9 @@ export default function Activites() {
                   className="input-field"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Heure</label>
+              <div className="row g-2">
+                <div className="col-6">
+                  <Form.Label className="fw-medium mb-2">Heure</Form.Label>
                   <input
                     type="time"
                     value={form.heure_debut}
@@ -398,8 +404,8 @@ export default function Activites() {
                     className="input-field"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Durée (min)</label>
+                <div className="col-6">
+                  <Form.Label className="fw-medium mb-2">Durée (min)</Form.Label>
                   <input
                     type="number"
                     value={form.duree_minutes}
@@ -408,8 +414,8 @@ export default function Activites() {
                     className="input-field"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Capacité max</label>
+                <div className="col-6">
+                  <Form.Label className="fw-medium mb-2">Capacité max</Form.Label>
                   <input
                     type="number"
                     value={form.capacite}
@@ -419,8 +425,8 @@ export default function Activites() {
                     className="input-field"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Prix (FC)</label>
+                <div className="col-6">
+                  <Form.Label className="fw-medium mb-2">Prix (FC)</Form.Label>
                   <input
                     type="number"
                     value={form.prix_default}
@@ -433,7 +439,7 @@ export default function Activites() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Liste des cotations</label>
+                <Form.Label className="fw-medium mb-2">Liste des cotations</Form.Label>
                 <p className="text-xs text-slate-500 mb-2">Définir les notes possibles pour cette activité (avant génération de la liste)</p>
                 <select
                   value={form.cotations_preset}
@@ -456,7 +462,7 @@ export default function Activites() {
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Notes internes</label>
+                <Form.Label className="fw-medium mb-2">Notes internes</Form.Label>
                 <textarea
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
@@ -465,60 +471,43 @@ export default function Activites() {
                   className="input-field resize-none"
                 />
               </div>
-              <div className="flex gap-3 justify-end pt-2">
-                <button
-                  type="button"
-                  onClick={() => setModal({ open: false, mode: 'form', item: null })}
-                  className="px-4 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl font-medium transition-colors"
-                >
+              <div className="d-flex gap-2 justify-content-end pt-2">
+                <Button variant="outline-secondary" onClick={() => setModal({ open: false, mode: 'form', item: null })}>
                   Annuler
-                </button>
-                <button type="submit" className="btn-primary">
-                  {modal.item ? 'Enregistrer les modifications' : 'Créer et générer QR'}
-                </button>
+                </Button>
+                <Button type="submit" variant="primary">
+                  {modal.item ? 'Enregistrer' : 'Créer et générer QR'}
+                </Button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+            </Form>
+        </Modal.Body>
+      </Modal>
 
       {/* QR preview modal - after creation */}
-      {modal.open && modal.mode === 'qr' && modal.item && (
-        <div className="modal-overlay" onClick={() => setModal({ open: false, mode: 'qr', item: null })}>
-          <div className="modal-content max-w-sm" onClick={(e) => e.stopPropagation()}>
-            <div className="text-center">
-              <h2 className="text-lg font-semibold text-slate-800 mb-1">QR Code généré</h2>
-              <p className="text-sm text-slate-500 mb-4">{modal.item.nom}</p>
+<Modal show={modal.open && modal.mode === 'qr' && !!modal.item} onHide={() => setModal({ open: false, mode: 'qr', item: null })} centered size="sm">
+        <Modal.Body className="text-center p-4">
+              {modal.item && (
+                <>
+              <h5 className="fw-bold mb-1">QR Code généré</h5>
+              <p className="text-muted small mb-4">{modal.item.nom}</p>
               <div className="bg-white rounded-2xl border-2 border-slate-100 p-6 inline-block">
                 <QRCodeSVG value={qrUrl} size={220} />
               </div>
               <p className="text-xs text-slate-400 mt-4 break-all px-2">{qrUrl}</p>
               <p className="text-sm text-slate-500 mt-2">Scannez pour ouvrir le formulaire d'enregistrement</p>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(qrUrl);
-                  toast.success('Lien copié !');
-                }}
-                className="mt-3 w-full flex items-center justify-center gap-2 py-2 text-sm font-medium text-primary-600 hover:bg-primary-50 rounded-lg"
-              >
+              <Button variant="outline-primary" className="w-100 d-flex align-items-center justify-content-center gap-2 mt-3" onClick={() => { navigator.clipboard.writeText(qrUrl); toast.success('Lien copié !'); }}>
                 <Copy className="w-4 h-4" /> Copier le lien
-              </button>
-              <Link
-                to={`/activites/${modal.item.id}`}
-                className="mt-6 inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors"
-              >
-                Voir l'activité <ChevronRight className="w-4 h-4" />
-              </Link>
-              <button
-                onClick={() => setModal({ open: false, mode: 'qr', item: null })}
-                className="block w-full mt-3 text-sm text-slate-500 hover:text-slate-700"
-              >
+              </Button>
+              <Link to={`/activites/${modal.item.id}`} className="btn btn-primary mt-3 w-100 d-inline-flex align-items-center justify-content-center gap-2">
+                  Voir l'activité <ChevronRight className="w-4 h-4" />
+                </Link>
+              <Button variant="link" className="w-100 mt-2 text-muted text-decoration-none" onClick={() => setModal({ open: false, mode: 'qr', item: null })}>
                 Fermer
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              </Button>
+                </>
+              )}
+        </Modal.Body>
+      </Modal>
     </div>
   );
 }
