@@ -23,6 +23,7 @@ export default function Exports() {
         if (data?.length && !selectedId) setSelectedId(data[0].id);
         setLoading(false);
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -40,6 +41,7 @@ export default function Exports() {
       setParticipations(partRes.data || []);
       setLoading(false);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId]);
 
   const total = participations.reduce((s, p) => s + Number(p.montant), 0);

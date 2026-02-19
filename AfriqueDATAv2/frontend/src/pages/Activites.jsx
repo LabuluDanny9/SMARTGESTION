@@ -59,6 +59,7 @@ export default function Activites() {
         navigate('/activites', { replace: true, state: {} });
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state?.editId, activities]);
 
   async function loadData() {

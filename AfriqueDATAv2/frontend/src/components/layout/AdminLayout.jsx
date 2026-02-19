@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { Offcanvas, Navbar, Container, Button, Dropdown, Form, InputGroup } from 'react-bootstrap';
+import { Offcanvas, Navbar, Container, Button, Dropdown } from 'react-bootstrap';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import Sidebar from './Sidebar';

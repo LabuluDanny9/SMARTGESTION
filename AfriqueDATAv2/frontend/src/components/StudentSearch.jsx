@@ -5,15 +5,6 @@ import { Search, User, Clock } from 'lucide-react';
 const RECENT_KEY = 'smart-gestion-recent-students';
 const MAX_RECENT = 8;
 
-/**
- * Recherche floue simple : normalise et compare des chaînes
- */
-function fuzzyMatch(str, query) {
-  const s = (str || '').toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
-  const q = (query || '').toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
-  return s.includes(q) || q.split('').every((c) => s.includes(c));
-}
-
 function highlightMatch(text, query) {
   if (!query?.trim()) return text;
   const re = new RegExp(`(${query.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');

@@ -187,7 +187,7 @@ export function generateParticipationInsights(data) {
 /** Génère les insights performance activités */
 export function generateActivityInsights(data) {
   const insights = [];
-  const { activityTypePerf, activityProfitability, participations } = data;
+  const { activityTypePerf, activityProfitability } = data;
 
   if (activityTypePerf?.length > 0) {
     const underperformers = activityTypePerf.filter((t) => {
@@ -300,7 +300,7 @@ export function detectPaymentOutliers(participations, thresholdMultiplier = 3) {
 /** Recommandations intelligentes */
 export function generateRecommendations(data) {
   const recs = [];
-  const { hourlyParticipation, facultyParticipation, activityTypePerf } = data;
+  const { hourlyParticipation, activityTypePerf } = data;
 
   if (hourlyParticipation?.length > 0) {
     const byHour = {};

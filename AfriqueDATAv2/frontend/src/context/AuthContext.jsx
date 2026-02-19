@@ -41,19 +41,6 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  async function fetchAdminProfile(userId, signOutIfMissing = true) {
-    const { data } = await supabase
-      .from('admin_profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    setAdminProfile(data);
-    if (!data && signOutIfMissing) {
-      await supabase.auth.signOut();
-    }
-    return data;
-  }
-
   async function fetchAdminProfileWithRetry(userId, maxRetries = 3) {
     for (let i = 0; i < maxRetries; i++) {
       if (i > 0) await new Promise((r) => setTimeout(r, 400));

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { DollarSign, Filter } from 'lucide-react';
+import { DollarSign } from 'lucide-react';
 
 export default function Paiements() {
   const [participations, setParticipations] = useState([]);

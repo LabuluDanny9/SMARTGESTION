@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Dropdown, Button } from 'react-bootstrap';
+import { Dropdown } from 'react-bootstrap';
 
 const actions = [
   { icon: 'bi-calendar3', label: 'Nouvelle activité', path: '/activites' },

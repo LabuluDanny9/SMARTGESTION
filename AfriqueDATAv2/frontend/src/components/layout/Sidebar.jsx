@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { Nav, Button } from 'react-bootstrap';
 import { supabase } from '../../lib/supabase';
 

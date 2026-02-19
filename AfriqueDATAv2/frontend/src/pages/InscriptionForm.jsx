@@ -17,6 +17,7 @@ export default function InscriptionForm() {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activityId]);
 
   useEffect(() => {

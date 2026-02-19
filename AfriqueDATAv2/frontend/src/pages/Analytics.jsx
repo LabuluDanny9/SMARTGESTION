@@ -8,10 +8,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
   LineChart,
   Line,
   AreaChart,
@@ -23,7 +19,6 @@ import {
   TrendingUp,
   Users,
   DollarSign,
-  Calendar,
   AlertTriangle,
   Lightbulb,
   Activity,
@@ -35,7 +30,6 @@ import {
 import { fetchAllAnalyticsData } from '../lib/analytics';
 import { runInsightEngine, simpleForecast } from '../lib/insightEngine';
 
-const CHART_COLORS = ['#dc2626', '#ef4444', '#b91c1c', '#991b1b', '#f87171', '#7f1d1d'];
 const SENTIMENT_STYLES = {
   positive: 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200',
   negative: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200',

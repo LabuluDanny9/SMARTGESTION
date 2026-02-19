@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, Row, Col, Form, InputGroup, Button, Table, Spinner, Badge } from 'react-bootstrap';
+import { Card, Row, Col, Form, InputGroup, Button, Table, Spinner } from 'react-bootstrap';
 import { supabase } from '../lib/supabase';
 import {
   BarChart,
