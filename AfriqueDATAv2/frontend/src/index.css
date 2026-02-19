@@ -1,0 +1,26 @@
+/* Tailwind - compatibilité pages existantes (à migrer progressivement vers Bootstrap) */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Smart Gestion - Additional styles */
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Compatibility for components using old classes */
+.input-field {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+}
+.input-field:focus {
+  background: white;
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+  outline: none;
+}

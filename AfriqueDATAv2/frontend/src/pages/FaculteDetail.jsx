@@ -1,0 +1,497 @@
+import { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
+import { ArrowLeft, Plus, Pencil, Trash2, Upload, ChevronDown, ChevronRight, Download, Users, FlaskConical } from 'lucide-react';
+import { importFromExcel, importFromPDF, downloadTemplate } from '../lib/importStudents';
+import toast from 'react-hot-toast';
+
+const TYPE_FORMATEUR = { formateur: 'Formateur', enseignant: 'Enseignant', assistant: 'Assistant' };
+
+export default function FaculteDetail() {
+  const { id } = useParams();
+  const [faculty, setFaculty] = useState(null);
+  const [departments, setDepartments] = useState([]);
+  const [promotionsByDept, setPromotionsByDept] = useState({});
+  const [studentsByPromo, setStudentsByPromo] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [expandedDept, setExpandedDept] = useState({});
+  const [expandedPromo, setExpandedPromo] = useState({});
+  const [modalDept, setModalDept] = useState({ open: false, item: null, facultyId: id });
+  const [modalPromo, setModalPromo] = useState({ open: false, item: null, departmentId: '' });
+  const [formDept, setFormDept] = useState({ nom: '', code: '' });
+  const [formPromo, setFormPromo] = useState({ nom: '', annee: '' });
+  const [importing, setImporting] = useState(null);
+  const [formateurs, setFormateurs] = useState([]);
+  const [pratiques, setPratiques] = useState([]);
+  const [expandedFormateurs, setExpandedFormateurs] = useState(true);
+  const [expandedPratiques, setExpandedPratiques] = useState(true);
+  const [modalFormateur, setModalFormateur] = useState({ open: false, item: null });
+  const [formFormateur, setFormFormateur] = useState({ nom_complet: '', email: '', telephone: '', type: 'formateur', specialite: '' });
+
+  useEffect(() => {
+    loadData();
+  }, [id]);
+
+  async function loadData() {
+    let deptData = [];
+    try {
+      const { data, error } = await supabase.from('departments').select('*').eq('faculty_id', id).order('nom');
+      deptData = error ? [] : (data || []);
+    } catch {
+      deptData = [];
+    }
+    const formResPromise = (async () => {
+      try {
+        const { data, error } = await supabase.from('formateurs').select('*').eq('faculty_id', id).eq('actif', true).order('nom_complet');
+        return error ? [] : (data || []);
+      } catch {
+        return [];
+      }
+    })();
+    const pratResPromise = (async () => {
+      try {
+        const { data, error } = await supabase.from('activities').select('*, activity_types(nom), formateurs(nom_complet)').eq('faculty_id', id).order('date_debut', { ascending: false });
+        return error ? [] : (data || []);
+      } catch {
+        return [];
+      }
+    })();
+    const [facRes, promRes, formRes, pratRes] = await Promise.all([
+      supabase.from('faculties').select('*').eq('id', id).single(),
+      supabase.from('promotions').select('*, departments(nom)').eq('faculty_id', id).order('nom'),
+      formResPromise,
+      pratResPromise,
+    ]);
+    setFaculty(facRes.data);
+    setDepartments(deptData);
+    setFormateurs(Array.isArray(formRes) ? formRes : []);
+    setPratiques(Array.isArray(pratRes) ? pratRes : []);
+
+    const byDept = {};
+    (promRes.data || []).forEach((p) => {
+      const did = p.department_id || 'none';
+      if (!byDept[did]) byDept[did] = [];
+      byDept[did].push(p);
+    });
+    setPromotionsByDept(byDept);
+    setLoading(false);
+  }
+
+  async function loadStudents(promoId) {
+    const { data } = await supabase.from('students').select('*').eq('promotion_id', promoId).order('nom_complet');
+    setStudentsByPromo((s) => ({ ...s, [promoId]: data || [] }));
+  }
+
+  function toggleDept(deptId) {
+    setExpandedDept((e) => ({ ...e, [deptId]: !e[deptId] }));
+  }
+
+  function togglePromo(promoId) {
+    const next = !expandedPromo[promoId];
+    setExpandedPromo((e) => ({ ...e, [promoId]: next }));
+    if (next) loadStudents(promoId);
+  }
+
+  async function handleSubmitDept(e) {
+    e.preventDefault();
+    try {
+      const payload = { faculty_id: id, nom: formDept.nom, code: formDept.code || null };
+      if (modalDept.item) {
+        await supabase.from('departments').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', modalDept.item.id);
+        toast.success('Département modifié');
+      } else {
+        await supabase.from('departments').insert([payload]);
+        toast.success('Département ajouté');
+      }
+      setModalDept({ open: false, item: null });
+      setFormDept({ nom: '', code: '' });
+      loadData();
+    } catch (err) {
+      toast.error(err.message);
+    }
+  }
+
+  async function handleSubmitPromo(e) {
+    e.preventDefault();
+    try {
+      const payload = { department_id: modalPromo.departmentId, nom: formPromo.nom, annee: formPromo.annee ? parseInt(formPromo.annee) : null };
+      if (modalPromo.item) {
+        await supabase.from('promotions').update({ ...payload, faculty_id: faculty?.id, updated_at: new Date().toISOString() }).eq('id', modalPromo.item.id);
+        toast.success('Promotion modifiée');
+      } else {
+        await supabase.from('promotions').insert([{ ...payload, faculty_id: id }]);
+        toast.success('Promotion ajoutée');
+      }
+      setModalPromo({ open: false, item: null, departmentId: '' });
+      setFormPromo({ nom: '', annee: '' });
+      loadData();
+    } catch (err) {
+      toast.error(err.message);
+    }
+  }
+
+  async function handleImport(e, promotionId) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(promotionId);
+    try {
+      let toInsert = [];
+      const ext = (file.name || '').toLowerCase();
+      if (ext.endsWith('.pdf')) {
+        toInsert = await importFromPDF(file);
+      } else if (ext.endsWith('.xlsx') || ext.endsWith('.xls') || ext.endsWith('.csv')) {
+        const parsed = await importFromExcel(file);
+        if (parsed === null) {
+          toast.error('Colonnes requises: Matricule (ou N°, Code) et Nom complet. Vérifiez les en-têtes de la 1ère ligne. Téléchargez le modèle si besoin.');
+          return;
+        }
+        toInsert = parsed;
+      } else {
+        toast.error('Format non supporté. Utilisez Excel (.xlsx, .csv) ou PDF.');
+        return;
+      }
+      if (toInsert.length === 0) {
+        toast.error('Aucune ligne valide trouvée. Excel: colonnes Matricule, Nom. PDF: tableau matricule + nom.');
+        return;
+      }
+      const rows = toInsert.map((r) => ({ promotion_id: promotionId, ...r }));
+      const { error } = await supabase.from('students').upsert(rows, {
+        onConflict: 'promotion_id,matricule',
+      });
+      if (error) throw error;
+      toast.success(`${rows.length} étudiant(s) importé(s)`);
+      loadStudents(promotionId);
+    } catch (err) {
+      toast.error(err.message || 'Erreur import');
+    } finally {
+      setImporting(null);
+      e.target.value = '';
+    }
+  }
+
+  async function handleDeleteDept(deptId) {
+    if (!window.confirm('Supprimer ce département ?')) return;
+    const { error } = await supabase.from('departments').delete().eq('id', deptId);
+    if (error) toast.error(error.message);
+    else {
+      toast.success('Département supprimé');
+      loadData();
+    }
+  }
+
+  async function handleDeletePromo(promoId) {
+    if (!window.confirm('Supprimer cette promotion ?')) return;
+    const { error } = await supabase.from('promotions').delete().eq('id', promoId);
+    if (error) toast.error(error.message);
+    else {
+      toast.success('Promotion supprimée');
+      loadData();
+    }
+  }
+
+  async function handleSubmitFormateur(e) {
+    e.preventDefault();
+    try {
+      const payload = { faculty_id: id, ...formFormateur };
+      if (modalFormateur.item) {
+        await supabase.from('formateurs').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', modalFormateur.item.id);
+        toast.success('Formateur modifié');
+      } else {
+        await supabase.from('formateurs').insert([payload]);
+        toast.success('Formateur ajouté');
+      }
+      setModalFormateur({ open: false, item: null });
+      setFormFormateur({ nom_complet: '', email: '', telephone: '', type: 'formateur', specialite: '' });
+      loadData();
+    } catch (err) {
+      toast.error(err.message);
+    }
+  }
+
+  async function handleDeleteFormateur(formateurId) {
+    if (!window.confirm('Désactiver ce formateur ?')) return;
+    const { error } = await supabase.from('formateurs').update({ actif: false, updated_at: new Date().toISOString() }).eq('id', formateurId);
+    if (error) toast.error(error.message);
+    else {
+      toast.success('Formateur désactivé');
+      loadData();
+    }
+  }
+
+  if (loading || !faculty) {
+    return (
+      <div className="flex justify-center py-16">
+        <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary-500 border-t-transparent" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <Link to="/facultes" className="inline-flex items-center gap-2 text-slate-600 hover:text-primary-600 text-sm font-medium">
+        <ArrowLeft className="w-4 h-4" /> Retour aux facultés
+      </Link>
+
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">{faculty.nom}</h1>
+          <p className="text-slate-500 text-sm">{faculty.code || ''}</p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={downloadTemplate}
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium transition-colors"
+          >
+            <Download className="w-4 h-4" /> Télécharger modèle Excel
+          </button>
+          <button
+            onClick={() => {
+              setFormDept({ nom: '', code: '' });
+              setModalDept({ open: true, item: null, facultyId: id });
+            }}
+            className="btn-primary"
+          >
+            <Plus className="w-4 h-4" /> Ajouter un département
+          </button>
+        </div>
+      </div>
+
+      {/* Départements */}
+      <div className="space-y-4">
+        {departments.length === 0 && (
+          <div className="bg-slate-50 rounded-2xl border border-slate-100 p-8 text-center">
+            <p className="text-slate-500 mb-4">Aucun département. Créez-en un pour organiser les promotions.</p>
+            <button
+              onClick={() => { setFormDept({ nom: 'Principal', code: 'PRIN' }); setModalDept({ open: true, item: null, facultyId: id }); }}
+              className="btn-primary"
+            >
+              <Plus className="w-4 h-4" /> Créer le premier département
+            </button>
+          </div>
+        )}
+        {departments.map((dept) => {
+          const promos = promotionsByDept[dept.id] || [];
+          const isExpanded = expandedDept[dept.id] !== false;
+          return (
+            <div key={dept.id} className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+              <div
+                className="flex items-center justify-between px-6 py-4 cursor-pointer hover:bg-slate-50/50"
+                onClick={() => toggleDept(dept.id)}
+              >
+                <div className="flex items-center gap-2">
+                  {isExpanded ? <ChevronDown className="w-5 h-5 text-slate-400" /> : <ChevronRight className="w-5 h-5 text-slate-400" />}
+                  <h2 className="font-semibold text-slate-800">{dept.nom}</h2>
+                  <span className="text-slate-400 text-sm">({promos.length} promotion{promos.length !== 1 ? 's' : ''})</span>
+                </div>
+                <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                  <button onClick={() => { setFormDept({ nom: dept.nom, code: dept.code || '' }); setModalDept({ open: true, item: dept }); }} className="p-2 text-slate-500 hover:text-primary-600 rounded-lg"><Pencil className="w-4 h-4" /></button>
+                  <button onClick={() => handleDeleteDept(dept.id)} className="p-2 text-slate-500 hover:text-red-600 rounded-lg"><Trash2 className="w-4 h-4" /></button>
+                  <button
+                    onClick={() => { setFormPromo({ nom: '', annee: new Date().getFullYear() }); setModalPromo({ open: true, item: null, departmentId: dept.id }); }}
+                    className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg text-sm"
+                  >
+                    <Plus className="w-4 h-4" /> Promotion
+                  </button>
+                </div>
+              </div>
+              {isExpanded && (
+                <div className="border-t border-slate-100 p-4 space-y-2">
+                  {promos.length === 0 ? (
+                    <p className="text-slate-400 text-sm py-2">Aucune promotion. Cliquez sur + Promotion pour ajouter.</p>
+                  ) : (
+                    promos.map((promo) => {
+                      const students = studentsByPromo[promo.id] || [];
+                      const isPromoExpanded = expandedPromo[promo.id];
+                      return (
+                        <div key={promo.id} className="rounded-xl border border-slate-100 overflow-hidden">
+                          <div
+                            className="flex items-center justify-between px-4 py-3 hover:bg-slate-50/50 cursor-pointer"
+                            onClick={() => togglePromo(promo.id)}
+                          >
+                            <div className="flex items-center gap-2">
+                              {isPromoExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                              <span className="font-medium text-slate-700">{promo.nom}</span>
+                              <span className="text-slate-400 text-sm">({promo.annee || '-'})</span>
+                            </div>
+                            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                              <label className="cursor-pointer">
+                                <input type="file" accept=".xlsx,.xls,.csv,.pdf" className="hidden" onChange={(e) => handleImport(e, promo.id)} />
+                                <span className="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-primary-50 text-primary-700 rounded-lg hover:bg-primary-100">
+                                  <Upload className="w-4 h-4" />
+                                  {importing === promo.id ? 'Import...' : 'Importer (Excel/PDF)'}
+                                </span>
+                              </label>
+                              <button onClick={() => { setFormPromo({ nom: promo.nom, annee: promo.annee || '' }); setModalPromo({ open: true, item: promo, departmentId: dept.id }); }} className="p-1.5 text-slate-500 hover:text-primary-600"><Pencil className="w-4 h-4" /></button>
+                              <button onClick={() => handleDeletePromo(promo.id)} className="p-1.5 text-slate-500 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
+                            </div>
+                          </div>
+                          {isPromoExpanded && (
+                            <div className="bg-slate-50/50 px-4 py-3 border-t border-slate-100">
+                              <p className="text-xs text-slate-500 mb-2">
+                                Liste officielle • {students.length} étudiant(s)
+                              </p>
+                              <div className="max-h-48 overflow-y-auto text-sm">
+                                {students.length === 0 ? (
+                                  <p className="text-slate-400">Aucun étudiant. Importez une liste Excel ou PDF (colonnes: Matricule, Nom complet).</p>
+                                ) : (
+                                  <table className="w-full text-slate-700">
+                                    <thead><tr><th className="text-left py-1 font-medium">Matricule</th><th className="text-left py-1 font-medium">Nom</th></tr></thead>
+                                    <tbody>
+                                      {students.slice(0, 20).map((s) => (
+                                        <tr key={s.id}><td className="py-1">{s.matricule}</td><td>{s.nom_complet}</td></tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                )}
+                                {students.length > 20 && <p className="text-slate-400 text-xs mt-1">+ {students.length - 20} autres</p>}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Formateurs / Enseignants */}
+      <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+        <div
+          className="flex items-center justify-between px-6 py-4 cursor-pointer hover:bg-slate-50/50"
+          onClick={() => setExpandedFormateurs((e) => !e)}
+        >
+          <div className="flex items-center gap-2">
+            {expandedFormateurs ? <ChevronDown className="w-5 h-5 text-slate-400" /> : <ChevronRight className="w-5 h-5 text-slate-400" />}
+            <Users className="w-5 h-5 text-primary-500" />
+            <h2 className="font-semibold text-slate-800">Formateurs / Enseignants</h2>
+            <span className="text-slate-400 text-sm">({formateurs.length})</span>
+          </div>
+          <button
+            onClick={(e) => { e.stopPropagation(); setFormFormateur({ nom_complet: '', email: '', telephone: '', type: 'formateur', specialite: '' }); setModalFormateur({ open: true, item: null }); }}
+            className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+        </div>
+        {expandedFormateurs && (
+          <div className="border-t border-slate-100 p-4">
+            {formateurs.length === 0 ? (
+              <p className="text-slate-400 text-sm">Aucun formateur. Cliquez sur + pour ajouter.</p>
+            ) : (
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {formateurs.map((f) => (
+                  <div key={f.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                    <div>
+                      <p className="font-medium text-slate-800">{f.nom_complet}</p>
+                      <p className="text-xs text-slate-500">{TYPE_FORMATEUR[f.type] || f.type}</p>
+                      {f.email && <p className="text-xs text-slate-500">{f.email}</p>}
+                    </div>
+                    <div className="flex gap-1">
+                      <button onClick={() => { setFormFormateur({ nom_complet: f.nom_complet, email: f.email || '', telephone: f.telephone || '', type: f.type || 'formateur', specialite: f.specialite || '' }); setModalFormateur({ open: true, item: f }); }} className="p-1.5 text-slate-500 hover:text-primary-600 rounded"><Pencil className="w-4 h-4" /></button>
+                      <button onClick={() => handleDeleteFormateur(f.id)} className="p-1.5 text-slate-500 hover:text-red-600 rounded"><Trash2 className="w-4 h-4" /></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Pratiques / Manipulations */}
+      <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+        <div
+          className="flex items-center justify-between px-6 py-4 cursor-pointer hover:bg-slate-50/50"
+          onClick={() => setExpandedPratiques((e) => !e)}
+        >
+          <div className="flex items-center gap-2">
+            {expandedPratiques ? <ChevronDown className="w-5 h-5 text-slate-400" /> : <ChevronRight className="w-5 h-5 text-slate-400" />}
+            <FlaskConical className="w-5 h-5 text-primary-500" />
+            <h2 className="font-semibold text-slate-800">Pratiques / Manipulations</h2>
+            <span className="text-slate-400 text-sm">({pratiques.length})</span>
+          </div>
+          <Link to="/activites" onClick={(e) => e.stopPropagation()} className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg text-sm font-medium">
+            Créer une activité
+          </Link>
+        </div>
+        {expandedPratiques && (
+          <div className="border-t border-slate-100 p-4">
+            {pratiques.length === 0 ? (
+              <p className="text-slate-400 text-sm">Aucune pratique. Créez une activité liée à cette faculté.</p>
+            ) : (
+              <div className="space-y-2">
+                {pratiques.map((a) => (
+                  <Link key={a.id} to={`/activites/${a.id}`} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-primary-200 hover:bg-primary-50/30 transition-colors">
+                    <div>
+                      <p className="font-medium text-slate-800">{a.nom}</p>
+                      <p className="text-xs text-slate-500">{a.activity_types?.nom} • {a.date_debut} • {a.formateurs?.nom_complet || 'Sans superviseur'}</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Modal Département */}
+      {modalDept.open && (
+        <div className="modal-overlay" onClick={() => setModalDept({ open: false })}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold mb-4">{modalDept.item ? 'Modifier' : 'Nouveau département'}</h2>
+            <form onSubmit={handleSubmitDept} className="space-y-4">
+              <div><label className="block text-sm font-medium mb-2">Nom</label><input type="text" value={formDept.nom} onChange={(e) => setFormDept({ ...formDept, nom: e.target.value })} required className="input-field" /></div>
+              <div><label className="block text-sm font-medium mb-2">Code</label><input type="text" value={formDept.code} onChange={(e) => setFormDept({ ...formDept, code: e.target.value })} className="input-field" /></div>
+              <div className="flex gap-3 justify-end">
+                <button type="button" onClick={() => setModalDept({ open: false })} className="px-4 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl">Annuler</button>
+                <button type="submit" className="btn-primary">Enregistrer</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Formateur */}
+      {modalFormateur.open && (
+        <div className="modal-overlay" onClick={() => setModalFormateur({ open: false })}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold mb-4">{modalFormateur.item ? 'Modifier le formateur' : 'Nouveau formateur'}</h2>
+            <form onSubmit={handleSubmitFormateur} className="space-y-4">
+              <div><label className="block text-sm font-medium mb-2">Nom complet</label><input type="text" value={formFormateur.nom_complet} onChange={(e) => setFormFormateur({ ...formFormateur, nom_complet: e.target.value })} required className="input-field" placeholder="Prénom et nom" /></div>
+              <div><label className="block text-sm font-medium mb-2">Type</label><select value={formFormateur.type} onChange={(e) => setFormFormateur({ ...formFormateur, type: e.target.value })} className="input-field"><option value="formateur">Formateur</option><option value="enseignant">Enseignant</option><option value="assistant">Assistant</option></select></div>
+              <div><label className="block text-sm font-medium mb-2">Email</label><input type="email" value={formFormateur.email} onChange={(e) => setFormFormateur({ ...formFormateur, email: e.target.value })} className="input-field" placeholder="email@unilu.cd" /></div>
+              <div><label className="block text-sm font-medium mb-2">Téléphone</label><input type="tel" value={formFormateur.telephone} onChange={(e) => setFormFormateur({ ...formFormateur, telephone: e.target.value })} className="input-field" placeholder="+243..." /></div>
+              <div><label className="block text-sm font-medium mb-2">Spécialité</label><input type="text" value={formFormateur.specialite} onChange={(e) => setFormFormateur({ ...formFormateur, specialite: e.target.value })} className="input-field" placeholder="ex: Informatique, Réseaux" /></div>
+              <div className="flex gap-3 justify-end">
+                <button type="button" onClick={() => setModalFormateur({ open: false })} className="px-4 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl">Annuler</button>
+                <button type="submit" className="btn-primary">Enregistrer</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Promotion */}
+      {modalPromo.open && (
+        <div className="modal-overlay" onClick={() => setModalPromo({ open: false })}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold mb-4">{modalPromo.item ? 'Modifier' : 'Nouvelle promotion'}</h2>
+            <form onSubmit={handleSubmitPromo} className="space-y-4">
+              <div><label className="block text-sm font-medium mb-2">Nom</label><input type="text" value={formPromo.nom} onChange={(e) => setFormPromo({ ...formPromo, nom: e.target.value })} required className="input-field" placeholder="ex: L3 Informatique" /></div>
+              <div><label className="block text-sm font-medium mb-2">Année</label><input type="number" value={formPromo.annee} onChange={(e) => setFormPromo({ ...formPromo, annee: e.target.value })} className="input-field" placeholder="2024" /></div>
+              <div className="flex gap-3 justify-end">
+                <button type="button" onClick={() => setModalPromo({ open: false })} className="px-4 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl">Annuler</button>
+                <button type="submit" className="btn-primary">Enregistrer</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

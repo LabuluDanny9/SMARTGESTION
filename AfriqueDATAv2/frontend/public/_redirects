@@ -1,0 +1,3 @@
+# Fallback SPA pour que les liens QR (/register/*, /inscription/*) fonctionnent
+# Sans ce fichier, les chemins directs retournent 404 sur hébergement statique
+/*    /index.html   200
