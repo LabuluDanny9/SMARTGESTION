@@ -116,6 +116,9 @@ export default function ReservationCalendrier() {
           <img src="/logo-salle-numerique.png" alt="Salle du Numérique" className="w-14 h-14 mx-auto mb-3 object-contain" />
           <h1 className="text-xl font-bold text-slate-800">RÉSERVATION PAR CALENDRIER</h1>
           <p className="text-slate-500 text-sm mt-1">Salle du Numérique – UNILU</p>
+          <a href="/formateur/login" className="inline-block mt-3 text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+            Formateur / Enseignant ? Accéder à votre espace →
+          </a>
         </div>
 
         {/* Mode formateur */}

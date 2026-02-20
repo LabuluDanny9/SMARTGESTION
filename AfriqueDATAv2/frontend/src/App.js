@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import FormateurProtectedRoute from './components/FormateurProtectedRoute';
 import AdminLayout from './components/layout/AdminLayout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -22,6 +23,8 @@ import InscriptionForm from './pages/InscriptionForm';
 import ReserveForm from './pages/ReserveForm';
 import ReservationCalendrier from './pages/ReservationCalendrier';
 import Reservations from './pages/Reservations';
+import FormateurLogin from './pages/FormateurLogin';
+import FormateurDashboard from './pages/FormateurDashboard';
 import './App.css';
 
 function App() {
@@ -39,6 +42,9 @@ function App() {
           <Route path="/reserve/:activityId" element={<ReserveForm />} />
           <Route path="/reserve" element={<ReservationCalendrier />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/formateur/login" element={<FormateurLogin />} />
+          {/* Formateur - protégé */}
+          <Route path="/formateur" element={<FormateurProtectedRoute><FormateurDashboard /></FormateurProtectedRoute>} />
           {/* Admin - protégé */}
           <Route
             path="/"
