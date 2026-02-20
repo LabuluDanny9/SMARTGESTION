@@ -25,6 +25,7 @@ import ReservationCalendrier from './pages/ReservationCalendrier';
 import Reservations from './pages/Reservations';
 import FormateurLogin from './pages/FormateurLogin';
 import FormateurDashboard from './pages/FormateurDashboard';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import './App.css';
 
 function App() {
@@ -42,9 +43,9 @@ function App() {
           <Route path="/reserve/:activityId" element={<ReserveForm />} />
           <Route path="/reserve" element={<ReservationCalendrier />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/formateur/login" element={<FormateurLogin />} />
+          <Route path="/formateur/login" element={<ErrorBoundary><FormateurLogin /></ErrorBoundary>} />
           {/* Formateur - protégé */}
-          <Route path="/formateur" element={<FormateurProtectedRoute><FormateurDashboard /></FormateurProtectedRoute>} />
+          <Route path="/formateur" element={<ErrorBoundary><FormateurProtectedRoute><FormateurDashboard /></FormateurProtectedRoute></ErrorBoundary>} />
           {/* Admin - protégé */}
           <Route
             path="/"

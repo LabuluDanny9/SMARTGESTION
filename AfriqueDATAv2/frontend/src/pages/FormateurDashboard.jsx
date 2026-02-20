@@ -20,11 +20,11 @@ import {
 const JOURS_SEMAINE = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 const MOIS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 const STATUT_CONFIG = {
-  pending: { label: 'En attente', color: 'amber', bg: 'bg-amber-50', text: 'text-amber-700', Icon: Clock },
-  approved: { label: 'Approuvée', color: 'emerald', bg: 'bg-emerald-50', text: 'text-emerald-700', Icon: CheckCircle },
-  rejected: { label: 'Refusée', color: 'rose', bg: 'bg-rose-50', text: 'text-rose-700', Icon: XCircle },
-  expired: { label: 'Expirée', color: 'slate', bg: 'bg-slate-100', text: 'text-slate-600', Icon: AlertCircle },
-  completed: { label: 'Terminée', color: 'indigo', bg: 'bg-indigo-50', text: 'text-indigo-700', Icon: CheckCircle },
+  pending: { label: 'En attente', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-100', Icon: Clock },
+  approved: { label: 'Approuvée', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-100', Icon: CheckCircle },
+  rejected: { label: 'Refusée', bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-100', Icon: XCircle },
+  expired: { label: 'Expirée', bg: 'bg-slate-100', text: 'text-slate-600', border: 'border-slate-200', Icon: AlertCircle },
+  completed: { label: 'Terminée', bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-100', Icon: CheckCircle },
 };
 
 function getDaysInMonth(year, month) {
@@ -44,7 +44,8 @@ function formatDateKey(y, m, d) {
 export default function FormateurDashboard() {
   const { formateurProfile, signOut } = useAuth();
   const navigate = useNavigate();
-  const formateurId = formateurProfile?.formateur_id || formateurProfile?.formateurs?.id;
+  const formateurData = formateurProfile?.formateurs || formateurProfile?.formateur;
+  const formateurId = formateurProfile?.formateur_id || formateurData?.id;
 
   const [activities, setActivities] = useState([]);
   const [reservations, setReservations] = useState([]);
@@ -122,12 +123,21 @@ export default function FormateurDashboard() {
     navigate('/formateur/login');
   };
 
-  const nomComplet = formateurProfile?.formateurs?.nom_complet || 'Formateur';
+  const nomComplet = formateurData?.nom_complet || 'Formateur';
 
   if (!formateurId) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="animate-spin rounded-full h-10 w-10 border-2 border-indigo-500 border-t-transparent" />
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+        <div className="bg-white rounded-2xl border border-slate-200 p-8 max-w-md text-center">
+          <p className="text-slate-600 mb-4">Profil formateur incomplet. Contactez le secrétariat.</p>
+          <button
+            type="button"
+            onClick={handleSignOut}
+            className="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-300"
+          >
+            Se déconnecter
+          </button>
+        </div>
       </div>
     );
   }
@@ -165,7 +175,7 @@ export default function FormateurDashboard() {
             return (
               <div
                 key={status}
-                className={`${cfg.bg} ${cfg.text} rounded-2xl p-4 border border-${cfg.color}-100/50`}
+                className={`${cfg.bg} ${cfg.text} ${cfg.border} rounded-2xl p-4 border`}
               >
                 <div className="flex items-center gap-2">
                   <cfg.Icon size={20} />

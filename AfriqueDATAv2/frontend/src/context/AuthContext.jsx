@@ -60,12 +60,17 @@ export function AuthProvider({ children }) {
   }
 
   async function fetchFormateurProfile(userId) {
-    const { data } = await supabase
-      .from('formateur_profiles')
-      .select('*, formateurs(id, nom_complet, email, telephone, type, faculty_id, faculties(nom))')
-      .eq('id', userId)
-      .single();
-    return data;
+    try {
+      const { data, error } = await supabase
+        .from('formateur_profiles')
+        .select('id, formateur_id, formateurs(id, nom_complet, email, telephone, type, faculty_id)')
+        .eq('id', userId)
+        .maybeSingle();
+      if (error) return null;
+      return data;
+    } catch {
+      return null;
+    }
   }
 
   async function fetchAdminProfileWithRetry(userId, maxRetries = 3) {

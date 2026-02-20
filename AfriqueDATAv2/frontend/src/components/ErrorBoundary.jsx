@@ -1,32 +1,29 @@
 import { Component } from 'react';
 
-export default class ErrorBoundary extends Component {
-  state = { error: null };
+export class ErrorBoundary extends Component {
+  state = { hasError: false, error: null };
 
   static getDerivedStateFromError(error) {
-    return { error };
+    return { hasError: true, error };
   }
 
-  componentDidCatch(error, info) {
-    console.error('ErrorBoundary:', error, info);
+  componentDidCatch(error, errorInfo) {
+    console.error('ErrorBoundary:', error, errorInfo);
   }
 
   render() {
-    if (this.state.error) {
+    if (this.state.hasError) {
       return (
-        <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light p-4">
-          <div className="text-center" style={{ maxWidth: 500 }}>
-            <h1 className="text-danger mb-3">Erreur</h1>
-            <p className="text-muted mb-3">{String(this.state.error?.message || this.state.error)}</p>
-            <p className="small text-muted">
-              Vercel → Settings → Environment Variables → ajoutez REACT_APP_SUPABASE_URL et REACT_APP_SUPABASE_ANON_KEY, puis redéployez.
-            </p>
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 max-w-md text-center">
+            <h1 className="text-xl font-bold text-slate-800 mb-2">Une erreur est survenue</h1>
+            <p className="text-slate-500 text-sm mb-4">{this.state.error?.message || 'Erreur inconnue'}</p>
             <button
               type="button"
-              className="btn btn-primary"
               onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-medium hover:bg-primary-700"
             >
-              Recharger
+              Recharger la page
             </button>
           </div>
         </div>
