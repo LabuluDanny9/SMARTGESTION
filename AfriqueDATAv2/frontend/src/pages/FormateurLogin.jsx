@@ -8,10 +8,10 @@ export default function FormateurLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signInFormateur, signUpFormateur, isFormateur, loading } = useAuth();
+  const { signInFormateur, signUpFormateur, isFormateur, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  if (loading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="animate-spin rounded-full h-10 w-10 border-2 border-indigo-500 border-t-transparent" />
