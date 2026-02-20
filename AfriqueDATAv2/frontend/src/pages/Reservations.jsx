@@ -41,8 +41,6 @@ export default function Reservations() {
   const [rejectionReason, setRejectionReason] = useState('');
   const [convertMontant, setConvertMontant] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [selectedIds, setSelectedIds] = useState(new Set());
-  const [editTime, setEditTime] = useState({ date: '', time: '' });
 
   const loadData = useCallback(async () => {
     try {
@@ -85,59 +83,12 @@ export default function Reservations() {
     completed: filtered.filter((r) => r.status === 'completed'),
   };
 
-  function toggleSelect(id) {
-    setSelectedIds((s) => {
-      const next = new Set(s);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
-
-  function toggleSelectAllPending() {
-    if (selectedIds.size === byStatus.pending.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(byStatus.pending.map((r) => r.id)));
-    }
-  }
-
-  async function handleBulkApprove() {
-    if (selectedIds.size === 0) return;
-    setSubmitting(true);
-    try {
-      const ids = Array.from(selectedIds);
-      const { error } = await supabase
-        .from('reservations')
-        .update({
-          status: 'approved',
-          validated_by: adminProfile?.id,
-          validated_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .in('id', ids)
-        .eq('status', 'pending');
-      if (error) throw error;
-      toast.success(`${ids.length} réservation(s) approuvée(s)`);
-      setSelectedIds(new Set());
-      loadData();
-    } catch (err) {
-      toast.error(err?.message || 'Erreur');
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
   async function handleAction(type, item) {
     setActionModal({ open: true, type, item });
     setAdminNote(item?.admin_note || '');
     setRejectionReason(item?.rejection_reason || '');
     const prix = item?.activities?.prix_default ?? 0;
     setConvertMontant(String(Number(prix) || ''));
-    setEditTime({
-      date: item?.desired_date || '',
-      time: item?.desired_time_start ? String(item.desired_time_start).slice(0, 5) : '',
-    });
   }
 
   async function submitAction() {
@@ -306,7 +257,6 @@ export default function Reservations() {
                           key={r.id}
                           item={r}
                           onAction={handleAction}
-                          statusConfig={STATUS_CONFIG}
                         />
                       ))
                     )}
@@ -435,8 +385,7 @@ export default function Reservations() {
   );
 }
 
-function ReservationCard({ item, onAction, statusConfig }) {
-  const cfg = statusConfig[item.status] || statusConfig.pending;
+function ReservationCard({ item, onAction }) {
   return (
     <div className="border rounded-2 p-2 mb-2 bg-body">
       <div className="d-flex justify-content-between align-items-start">
