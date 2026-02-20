@@ -114,20 +114,46 @@ export default function FaculteDetail() {
 
   async function handleSubmitPromo(e) {
     e.preventDefault();
+    const nom = (formPromo.nom || '').trim();
+    if (!nom) {
+      toast.error('Le nom de la promotion est requis');
+      return;
+    }
+    const anneeVal = formPromo.annee ? String(formPromo.annee).trim() : '';
+    const annee = anneeVal ? (parseInt(anneeVal, 10) || null) : null;
+    const deptId = (modalPromo.departmentId || '').trim() || null;
     try {
-      const payload = { department_id: modalPromo.departmentId, nom: formPromo.nom, annee: formPromo.annee ? parseInt(formPromo.annee) : null };
+      const payload = {
+        faculty_id: id,
+        nom,
+        ...(annee != null && { annee }),
+        ...(deptId && { department_id: deptId }),
+      };
       if (modalPromo.item) {
-        await supabase.from('promotions').update({ ...payload, faculty_id: faculty?.id, updated_at: new Date().toISOString() }).eq('id', modalPromo.item.id);
+        const updatePayload = { nom, faculty_id: id, updated_at: new Date().toISOString() };
+        if (annee != null) updatePayload.annee = annee;
+        updatePayload.department_id = deptId;
+        const { error } = await supabase.from('promotions').update(updatePayload).eq('id', modalPromo.item.id);
+        if (error) throw error;
         toast.success('Promotion modifiée');
       } else {
-        await supabase.from('promotions').insert([{ ...payload, faculty_id: id }]);
+        const { error } = await supabase.from('promotions').insert([payload]);
+        if (error) {
+          if (error.code === '23505' || error.message?.includes('unique') || error.message?.includes('duplicate')) {
+            throw new Error('Une promotion avec ce nom existe déjà dans cette faculté.');
+          }
+          if (error.code === '23503' || error.message?.includes('foreign key')) {
+            throw new Error('Département invalide. Vérifiez que le département existe.');
+          }
+          throw error;
+        }
         toast.success('Promotion ajoutée');
       }
       setModalPromo({ open: false, item: null, departmentId: '' });
       setFormPromo({ nom: '', annee: '' });
       loadData();
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err?.message || 'Erreur lors de l\'enregistrement');
     }
   }
 
@@ -261,13 +287,21 @@ export default function FaculteDetail() {
       <div className="space-y-4">
         {departments.length === 0 && (
           <div className="bg-slate-50 rounded-2xl border border-slate-100 p-8 text-center">
-            <p className="text-slate-500 mb-4">Aucun département. Créez-en un pour organiser les promotions.</p>
-            <button
-              onClick={() => { setFormDept({ nom: 'Principal', code: 'PRIN' }); setModalDept({ open: true, item: null, facultyId: id }); }}
-              className="btn-primary"
-            >
-              <Plus className="w-4 h-4" /> Créer le premier département
-            </button>
+            <p className="text-slate-500 mb-4">Aucun département. Créez-en un pour organiser les promotions, ou ajoutez une promotion directement.</p>
+            <div className="flex flex-wrap gap-2 justify-center">
+              <button
+                onClick={() => { setFormDept({ nom: 'Principal', code: 'PRIN' }); setModalDept({ open: true, item: null, facultyId: id }); }}
+                className="btn-primary"
+              >
+                <Plus className="w-4 h-4" /> Créer le premier département
+              </button>
+              <button
+                onClick={() => { setFormPromo({ nom: '', annee: new Date().getFullYear() }); setModalPromo({ open: true, item: null, departmentId: '' }); }}
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium transition-colors"
+              >
+                <Plus className="w-4 h-4" /> Ajouter une promotion
+              </button>
+            </div>
           </div>
         )}
         {departments.map((dept) => {

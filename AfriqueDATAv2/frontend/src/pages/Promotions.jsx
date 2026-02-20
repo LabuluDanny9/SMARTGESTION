@@ -98,7 +98,8 @@ export default function Promotions() {
       toast.error('Le nom est requis');
       return;
     }
-    const deptId = (form.department_id || '').trim() || null;
+    const rawDept = form.department_id;
+    const deptId = (typeof rawDept === 'string' ? rawDept.trim() : rawDept) || null;
     const anneeRaw = form.annee ? String(form.annee).trim() : '';
     const annee = anneeRaw ? (parseInt(anneeRaw, 10) || null) : null;
 
