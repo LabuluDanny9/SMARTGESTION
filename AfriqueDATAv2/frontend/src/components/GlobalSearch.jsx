@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Modal, Form, Spinner } from 'react-bootstrap';
+import { Search, ChevronRight, CalendarDays, Users } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 export default function GlobalSearch({ open, onClose }) {
@@ -51,7 +52,7 @@ export default function GlobalSearch({ open, onClose }) {
     <Modal show={open} onHide={onClose} centered className="fade" size="lg">
       <Modal.Body className="p-0 rounded-3 overflow-hidden">
         <div className="d-flex align-items-center gap-2 px-4 py-3 border-bottom">
-          <i className="bi bi-search text-muted" />
+          <Search size={20} className="text-muted flex-shrink-0" />
           <Form.Control
             type="text"
             value={query}
@@ -73,20 +74,24 @@ export default function GlobalSearch({ open, onClose }) {
             <div className="py-2">
               {results.activities.length > 0 && (
                 <div className="px-3 py-1">
-                  <p className="small text-uppercase text-muted fw-semibold mb-2">Activités</p>
+                  <p className="small text-uppercase text-muted fw-semibold mb-2 d-flex align-items-center gap-1">
+                    <CalendarDays size={14} /> Activités
+                  </p>
                   {results.activities.map((a) => (
-                    <button key={a.id} onClick={() => handleSelect(`/activites/${a.id}`)} className="w-100 d-flex align-items-center justify-content-between px-3 py-2 rounded border-0 bg-transparent hover-bg-light text-start text-dark">
+                    <button key={a.id} onClick={() => handleSelect(`/activites/${a.id}`)} className="w-100 d-flex align-items-center justify-content-between px-3 py-2 rounded border-0 bg-transparent hover-bg-light text-start text-dark transition-colors">
                       <span className="fw-medium text-truncate">{a.nom}</span>
-                      <i className="bi bi-chevron-right text-muted" />
+                      <ChevronRight size={18} className="text-muted flex-shrink-0" />
                     </button>
                   ))}
                 </div>
               )}
               {results.students.length > 0 && (
                 <div className="px-3 py-1">
-                  <p className="small text-uppercase text-muted fw-semibold mb-2">Participants</p>
+                  <p className="small text-uppercase text-muted fw-semibold mb-2 d-flex align-items-center gap-1">
+                    <Users size={14} /> Participants
+                  </p>
                   {results.students.map((p) => (
-                    <button key={p.id} onClick={() => handleSelect(`/activites/${p.activity_id}`)} className="w-100 d-flex align-items-center justify-content-between px-3 py-2 rounded border-0 bg-transparent hover-bg-light text-start text-dark">
+                    <button key={p.id} onClick={() => handleSelect(`/activites/${p.activity_id}`)} className="w-100 d-flex align-items-center justify-content-between px-3 py-2 rounded border-0 bg-transparent hover-bg-light text-start text-dark transition-colors">
                       <span className="fw-medium text-truncate">{p.nom_complet}</span>
                       <span className="small text-muted text-truncate ms-2" style={{ maxWidth: 120 }}>{p.activities?.nom}</span>
                     </button>

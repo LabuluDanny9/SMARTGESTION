@@ -1,28 +1,44 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Nav, Button } from 'react-bootstrap';
+import { Nav, Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import {
+  LayoutDashboard,
+  BarChart3,
+  GraduationCap,
+  Layers,
+  Users,
+  UserCheck,
+  Tags,
+  CalendarDays,
+  Wallet,
+  FileDown,
+  Settings,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+} from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 const sectionsConfig = [
   { label: null, items: [
-    { path: '/', icon: 'bi-grid-1x2', label: 'Tableau de bord', badgeKey: null },
-    { path: '/analytics', icon: 'bi-graph-up', label: 'Analytics', badgeKey: null },
+    { path: '/', Icon: LayoutDashboard, label: 'Tableau de bord', badgeKey: null },
+    { path: '/analytics', Icon: BarChart3, label: 'Analytics', badgeKey: null },
   ] },
   { label: 'ACADÉMIQUE', items: [
-    { path: '/facultes', icon: 'bi-mortarboard', label: 'Facultés', badgeKey: 'facultes' },
-    { path: '/promotions', icon: 'bi-layers', label: 'Promotions', badgeKey: 'promotions' },
-    { path: '/etudiants', icon: 'bi-people', label: 'Étudiants', badgeKey: 'etudiants' },
-    { path: '/visiteurs', icon: 'bi-person-check', label: 'Visiteurs', badgeKey: 'visiteurs' },
+    { path: '/facultes', Icon: GraduationCap, label: 'Facultés', badgeKey: 'facultes' },
+    { path: '/promotions', Icon: Layers, label: 'Promotions', badgeKey: 'promotions' },
+    { path: '/etudiants', Icon: Users, label: 'Étudiants', badgeKey: 'etudiants' },
+    { path: '/visiteurs', Icon: UserCheck, label: 'Visiteurs', badgeKey: 'visiteurs' },
   ] },
   { label: 'ACTIVITÉS', items: [
-    { path: '/types-activite', icon: 'bi-tags', label: "Types d'activité", badgeKey: 'types' },
-    { path: '/activites', icon: 'bi-calendar3', label: 'Activités', badgeKey: 'activites' },
+    { path: '/types-activite', Icon: Tags, label: "Types d'activité", badgeKey: 'types' },
+    { path: '/activites', Icon: CalendarDays, label: 'Activités', badgeKey: 'activites' },
   ] },
   { label: 'FINANCE', items: [
-    { path: '/paiements', icon: 'bi-currency-dollar', label: 'Paiements', badgeKey: 'enAttente' },
-    { path: '/exports', icon: 'bi-download', label: 'Exports', badgeKey: null },
+    { path: '/paiements', Icon: Wallet, label: 'Paiements', badgeKey: 'enAttente' },
+    { path: '/exports', Icon: FileDown, label: 'Exports', badgeKey: null },
   ] },
-  { label: 'ADMINISTRATION', items: [{ path: '/parametres', icon: 'bi-gear', label: 'Paramètres', badgeKey: null }] },
+  { label: 'ADMINISTRATION', items: [{ path: '/parametres', Icon: Settings, label: 'Paramètres', badgeKey: null }] },
 ];
 
 export default function Sidebar({ collapsed, onToggle, onNavigate, mobile }) {
@@ -54,60 +70,76 @@ export default function Sidebar({ collapsed, onToggle, onNavigate, mobile }) {
     if (onNavigate) onNavigate();
   };
 
+  const renderNavLink = (item) => {
+    const { path, Icon, label, badgeKey } = item;
+    const count = badgeKey ? badges[badgeKey] : null;
+    const link = (
+      <Nav.Link
+        as={NavLink}
+        to={path}
+        onClick={handleNavClick}
+        end={path === '/'}
+        className={`d-flex align-items-center rounded-3 px-3 py-2 mb-1 sidebar-nav-link ${collapsed ? 'justify-content-center px-2' : ''}`}
+      >
+        <Icon className="flex-shrink-0" size={20} strokeWidth={2} />
+        {!collapsed && (
+          <>
+            <span className="flex-grow-1 text-truncate ms-2">{label}</span>
+            {count != null && count > 0 && badgeKey === 'enAttente' && (
+              <span className="badge bg-warning text-dark ms-2 animate-pulse-badge">{count}</span>
+            )}
+          </>
+        )}
+      </Nav.Link>
+    );
+    if (collapsed) {
+      return (
+        <OverlayTrigger key={path} placement="right" overlay={<Tooltip id={`tooltip-${path}`}>{label}</Tooltip>}>
+          <div className="w-100">{link}</div>
+        </OverlayTrigger>
+      );
+    }
+    return <Fragment key={path}>{link}</Fragment>;
+  };
+
   return (
     <>
-      <div className="p-3 border-bottom">
+      <div className="p-3 border-bottom sidebar-brand-wrapper">
         <div className={`d-flex align-items-center ${collapsed ? 'justify-content-center' : 'gap-2'}`}>
-          <img src="/logo-salle-numerique.png" alt="Salle du Numérique" className="rounded flex-shrink-0" style={{ width: 40, height: 40, objectFit: 'contain' }} />
+          <div className="position-relative flex-shrink-0">
+            <img src="/logo-salle-numerique.png" alt="Salle du Numérique" className="rounded-3" style={{ width: 42, height: 42, objectFit: 'contain' }} />
+            <span className="position-absolute bottom-0 end-0 bg-primary rounded-circle d-flex align-items-center justify-content-center" style={{ width: 14, height: 14 }}>
+              <Sparkles size={8} className="text-white" strokeWidth={2.5} />
+            </span>
+          </div>
           {!collapsed && (
             <div className="min-w-0 flex-grow-1 sidebar-brand">
               <h6 className="mb-0 fw-bold text-truncate">SMART GESTION</h6>
-              <small className="text-truncate d-block">Salle du Numérique</small>
+              <small className="text-truncate d-block opacity-75">Salle du Numérique</small>
             </div>
           )}
         </div>
       </div>
 
       <Nav className="flex-column flex-grow-1 p-2 overflow-auto sidebar-nav">
-        {sectionsConfig.map((section) => (
-          <div key={section.label || 'main'} className="mb-3">
+        {sectionsConfig.map((section, idx) => (
+          <div key={section.label || 'main'} className="mb-3" style={{ animationDelay: `${idx * 30}ms` }}>
             {section.label && !collapsed && (
               <div className="px-3 mb-1 small text-uppercase sidebar-section-label">{section.label}</div>
             )}
-            {section.items.map(({ path, icon, label, badgeKey }) => {
-              const count = badgeKey ? badges[badgeKey] : null;
-              return (
-                <Nav.Link
-                  key={path}
-                  as={NavLink}
-                  to={path}
-                  onClick={handleNavClick}
-                  end={path === '/'}
-                  title={collapsed ? label : undefined}
-                  className={`d-flex align-items-center rounded-3 px-3 py-2 mb-1 ${collapsed ? 'justify-content-center' : ''}`}
-                >
-                  <i className={`bi ${icon} me-2 flex-shrink-0`} style={{ fontSize: '1.1rem' }} />
-                  {!collapsed && (
-                    <>
-                      <span className="flex-grow-1 text-truncate">{label}</span>
-                      {count != null && count > 0 && badgeKey === 'enAttente' && (
-                        <span className="badge bg-warning text-dark ms-1">{count}</span>
-                      )}
-                    </>
-                  )}
-                </Nav.Link>
-              );
-            })}
+            {section.items.map(renderNavLink)}
           </div>
         ))}
       </Nav>
 
       {!mobile && (
         <div className="p-2 border-top">
-          <Button variant="outline-secondary" size="sm" className="w-100 d-flex align-items-center justify-content-center gap-2 text-decoration-none p-2" onClick={onToggle}>
-            <i className={`bi bi-chevron-${collapsed ? 'right' : 'left'}`} />
-            {!collapsed && <span className="small">Réduire</span>}
-          </Button>
+          <OverlayTrigger placement="right" overlay={<Tooltip>{collapsed ? 'Agrandir le menu' : 'Réduire le menu'}</Tooltip>}>
+            <Button variant="outline-secondary" size="sm" className="w-100 d-flex align-items-center justify-content-center gap-2 text-decoration-none p-2 sidebar-toggle-btn" onClick={onToggle}>
+              {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+              {!collapsed && <span className="small">Réduire</span>}
+            </Button>
+          </OverlayTrigger>
         </div>
       )}
     </>

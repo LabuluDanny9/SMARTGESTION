@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, Row, Col, Form, InputGroup, Button, Table, Spinner } from 'react-bootstrap';
 import { supabase } from '../lib/supabase';
+import { Search, CalendarDays, Users, DollarSign, ChevronRight, AlertCircle } from 'lucide-react';
 import {
   BarChart,
   Bar,
@@ -140,15 +141,15 @@ export default function Dashboard() {
 
   const hasSearchResults = searchResults.activities.length > 0 || searchResults.students.length > 0;
   const cards = [
-    { label: "Aujourd'hui", value: todayEncaisse.toLocaleString() + ' FC', sublabel: 'encaissé', icon: 'bi-currency-dollar', color: CARD_COLORS[1], href: '/paiements' },
-    { label: 'Total activités', value: stats.activites, sublabel: null, icon: 'bi-calendar3', color: CARD_COLORS[0], href: '/activites' },
-    { label: 'Participants', value: stats.etudiants + stats.visiteurs, sublabel: `${stats.etudiants} étudiants, ${stats.visiteurs} visiteurs`, icon: 'bi-people', color: CARD_COLORS[2], href: null },
-    { label: 'Total encaissé', value: stats.totalEncaisse.toLocaleString() + ' FC', sublabel: null, icon: 'bi-currency-dollar', color: CARD_COLORS[3], href: '/paiements' },
+    { label: "Aujourd'hui", value: todayEncaisse.toLocaleString() + ' FC', sublabel: 'encaissé', Icon: DollarSign, color: CARD_COLORS[1], href: '/paiements' },
+    { label: 'Total activités', value: stats.activites, sublabel: null, Icon: CalendarDays, color: CARD_COLORS[0], href: '/activites' },
+    { label: 'Participants', value: stats.etudiants + stats.visiteurs, sublabel: `${stats.etudiants} étudiants, ${stats.visiteurs} visiteurs`, Icon: Users, color: CARD_COLORS[2], href: null },
+    { label: 'Total encaissé', value: stats.totalEncaisse.toLocaleString() + ' FC', sublabel: null, Icon: DollarSign, color: CARD_COLORS[3], href: '/paiements' },
   ];
 
   if (loading) {
     return (
-      <div className="fade-in">
+      <div className="animate-fade-in">
         <div className="skeleton mb-3" style={{ width: 200, height: 32 }} />
         <Row className="g-3 mb-4">
           {[1, 2, 3, 4].map((i) => (
@@ -167,7 +168,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="fade-in">
+    <div className="animate-fade-in">
       <div className="d-flex flex-column flex-sm-row flex-sm-wrap align-items-start justify-content-between gap-3 mb-4">
         <div>
           <h1 className="h4 h3-md fw-bold text-dark mb-1">Tableau de bord</h1>
@@ -175,7 +176,7 @@ export default function Dashboard() {
         </div>
         <div className="d-flex gap-2 w-100 flex-sm-grow-0" style={{ maxWidth: 400 }}>
           <InputGroup size="sm">
-            <InputGroup.Text><i className="bi bi-search" /></InputGroup.Text>
+            <InputGroup.Text><Search size={18} /></InputGroup.Text>
             <Form.Control
               placeholder="Rechercher une activité ou un étudiant..."
               value={searchQuery}
@@ -184,7 +185,7 @@ export default function Dashboard() {
             />
           </InputGroup>
           <Button variant="primary" onClick={handleSearch} disabled={searching || !searchQuery.trim()} className="btn-mobile-full">
-            {searching ? <Spinner animation="border" size="sm" /> : <i className="bi bi-search" />}
+            {searching ? <Spinner animation="border" size="sm" /> : <Search size={18} />}
             <span className="d-none d-sm-inline ms-1">Rechercher</span>
           </Button>
         </div>
@@ -193,7 +194,7 @@ export default function Dashboard() {
       {searchQuery.trim().length >= 2 && (
         <Card className="mb-4 shadow-sm">
           <Card.Header className="bg-light py-3">
-            <h6 className="mb-0"><i className="bi bi-search text-primary me-2" />Résultats pour « {searchQuery} »</h6>
+            <h6 className="mb-0 d-flex align-items-center"><Search size={18} className="text-primary me-2" />Résultats pour « {searchQuery} »</h6>
           </Card.Header>
           <Card.Body>
             {searching ? (
@@ -204,7 +205,7 @@ export default function Dashboard() {
               <Row xs={1} md={2} className="g-3">
                 {searchResults.activities.length > 0 && (
                   <Col>
-                    <h6 className="text-muted small mb-2"><i className="bi bi-calendar3 me-1" /> Activités ({searchResults.activities.length})</h6>
+                    <h6 className="text-muted small mb-2 d-flex align-items-center"><CalendarDays size={14} className="me-1" /> Activités ({searchResults.activities.length})</h6>
                     <div className="d-flex flex-column gap-2">
                       {searchResults.activities.map((a) => (
                         <Link key={a.id} to={`/activites/${a.id}`} className="p-3 rounded-3 border text-dark text-decoration-none card-hover">
@@ -217,7 +218,7 @@ export default function Dashboard() {
                 )}
                 {searchResults.students.length > 0 && (
                   <Col>
-                    <h6 className="text-muted small mb-2"><i className="bi bi-person me-1" /> Participants ({searchResults.students.length})</h6>
+                    <h6 className="text-muted small mb-2 d-flex align-items-center"><Users size={14} className="me-1" /> Participants ({searchResults.students.length})</h6>
                     <div className="d-flex flex-column gap-2">
                       {searchResults.students.map((p) => (
                         <Link key={p.id} to={`/activites/${p.activity_id}`} className="p-3 rounded-3 border text-dark text-decoration-none card-hover">
@@ -236,17 +237,17 @@ export default function Dashboard() {
 
       {enAttenteCount > 0 && (
         <Link to="/paiements" className="d-flex align-items-center gap-3 p-4 bg-warning bg-opacity-10 border border-warning rounded-3 text-decoration-none text-dark mb-4 card-hover">
-          <i className="bi bi-exclamation-circle fs-4 text-warning" />
+          <AlertCircle size={28} className="text-warning flex-shrink-0" />
           <div>
             <p className="fw-semibold mb-0">{enAttenteCount} paiement{enAttenteCount > 1 ? 's' : ''} en attente</p>
             <p className="small text-muted mb-0">Cliquez pour valider les paiements</p>
           </div>
-          <i className="bi bi-chevron-right ms-auto text-warning" />
+          <ChevronRight size={20} className="text-warning ms-auto flex-shrink-0" />
         </Link>
       )}
 
       <Row xs={1} sm={2} xl={4} className="g-3 mb-4">
-        {cards.map(({ label, value, sublabel, icon, color, href }) => {
+        {cards.map(({ label, value, sublabel, Icon, color, href }) => {
           const CardWrapper = href ? Link : 'div';
           return (
             <Col key={label}>
@@ -259,7 +260,7 @@ export default function Dashboard() {
                       {sublabel && <Card.Text className="text-muted small mb-0">{sublabel}</Card.Text>}
                     </div>
                     <div className="rounded-3 d-flex align-items-center justify-content-center text-white" style={{ width: 48, height: 48, backgroundColor: color }}>
-                      <i className={`bi ${icon} fs-5`} />
+                      <Icon size={24} strokeWidth={2} />
                     </div>
                   </Card.Body>
                 </Card>

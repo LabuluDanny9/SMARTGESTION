@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-import { Button, Modal, Form, Spinner, Table } from 'react-bootstrap';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Button, Modal, Form, Spinner, Table, InputGroup } from 'react-bootstrap';
+import { Plus, Pencil, Trash2, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 import TableSkeleton from '../components/ui/TableSkeleton';
 
@@ -210,14 +210,18 @@ export default function Promotions() {
       )}
 
       <div className="mb-3">
-        <input
-          type="search"
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          placeholder="Rechercher par nom, faculté ou année..."
-          className="form-control"
-          style={{ maxWidth: 320 }}
-        />
+        <InputGroup style={{ maxWidth: 340 }}>
+          <InputGroup.Text className="bg-body border-end-0">
+            <Search size={18} className="text-muted" />
+          </InputGroup.Text>
+          <Form.Control
+            type="search"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            placeholder="Rechercher par nom, faculté ou année..."
+            className="border-start-0"
+          />
+        </InputGroup>
       </div>
 
       <div className="card shadow-sm overflow-hidden bg-body">

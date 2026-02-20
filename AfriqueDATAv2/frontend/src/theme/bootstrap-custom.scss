@@ -25,16 +25,16 @@ $box-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 @import 'bootstrap/scss/bootstrap';
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 
-// Sidebar - thème adaptatif
-.sidebar-nav .nav-link {
+// Sidebar - thème adaptatif, transitions fluides
+.sidebar-nav .nav-link,
+.sidebar-nav-link {
   color: var(--bs-body-color) !important;
   font-weight: 500;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: sidebarLinkFade 0.4s ease-out backwards;
   &:hover {
     color: $primary !important;
     background: rgba($primary, 0.12);
-    transform: translateX(6px);
+    transform: translateX(4px);
   }
   &.active {
     background: rgba($primary, 0.15);
@@ -42,6 +42,14 @@ $box-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     font-weight: 600;
     box-shadow: inset 3px 0 0 $primary;
   }
+}
+
+.animate-pulse-badge {
+  animation: pulse-badge 2s ease-in-out infinite;
+}
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.05); }
 }
 
 @keyframes sidebarLinkFade {
@@ -88,13 +96,24 @@ $box-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
 
 .hover-bg-light:hover { background-color: var(--bs-light) !important; }
+.hover-primary:hover { color: $primary !important; }
 
-.fade-in {
-  animation: fadeIn 0.4s ease-out;
+// Transitions fluides globales
+.fade-in,
+.animate-fade-in {
+  animation: fadeIn 0.35s ease-out forwards;
 }
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+// Transitions douces sur les cartes et contenus
+.card, .btn, .form-control, .form-select {
+  transition: all 0.2s ease;
+}
+.card:hover {
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
 }
 
 // Mobile: full-width buttons
@@ -114,6 +133,23 @@ $box-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   border-color: var(--bs-primary);
   color: var(--bs-primary);
 }
+
+// Quick FAB - transitions fluides
+.quick-fab-toggle {
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+  &:hover {
+    transform: scale(1.08);
+    box-shadow: 0 8px 25px -5px rgba(220, 38, 38, 0.35) !important;
+  }
+}
+.quick-fab-menu .dropdown-item {
+  transition: background 0.15s ease;
+  &:hover {
+    padding-left: 1rem !important;
+  }
+}
+
+.rotate-45 { transform: rotate(45deg); }
 
 // Print
 @media print {

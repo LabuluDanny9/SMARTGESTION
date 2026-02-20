@@ -6,7 +6,8 @@ import { useTheme } from '../../context/ThemeContext';
 import Sidebar from './Sidebar';
 import GlobalSearch from '../GlobalSearch';
 import QuickActionsFAB from '../QuickActionsFAB';
-import 'bootstrap-icons/font/bootstrap-icons.css';
+import BreadcrumbNav from './BreadcrumbNav';
+import { Menu, Search, Sun, Moon, ChevronDown, LogOut } from 'lucide-react';
 
 export default function AdminLayout() {
   const { adminProfile, signOut } = useAuth();
@@ -63,22 +64,22 @@ export default function AdminLayout() {
         <Navbar expand="lg" className="bg-body border-bottom shadow-sm py-2 px-3 sticky-top">
           <Container fluid className="px-3">
             <Button
-              variant="link"
-              className="d-lg-none p-2 text-secondary text-decoration-none me-2"
+              variant="outline-secondary"
+              className="d-lg-none p-2 me-2"
               onClick={() => setShowOffcanvas(true)}
               aria-label="Ouvrir le menu"
             >
-              <i className="bi bi-list fs-4" />
+              <Menu size={22} strokeWidth={2} />
             </Button>
 
             <div className="d-flex flex-grow-1 align-items-center gap-2 min-w-0">
               <Button
-                variant="light"
+                variant="outline-secondary"
                 size="sm"
-                className="d-none d-sm-flex align-items-center gap-2 border"
+                className="d-none d-sm-flex align-items-center gap-2"
                 onClick={() => setSearchOpen(true)}
               >
-                <i className="bi bi-search" />
+                <Search size={16} />
                 <span className="text-muted">Recherche...</span>
                 <kbd className="ms-1 px-1 py-0 bg-secondary rounded small">Ctrl+K</kbd>
               </Button>
@@ -89,7 +90,7 @@ export default function AdminLayout() {
 
             <div className="d-flex align-items-center gap-2">
               <Button variant="outline-secondary" size="sm" className="p-2" onClick={toggleTheme} aria-label={dark ? 'Mode clair' : 'Mode sombre'} title={dark ? 'Mode clair' : 'Mode sombre'}>
-                <i className={dark ? 'bi bi-sun-fill' : 'bi bi-moon-fill'} />
+                {dark ? <Sun size={18} /> : <Moon size={18} />}
               </Button>
 
               <Dropdown align="end" className="d-none d-sm-block">
@@ -101,18 +102,18 @@ export default function AdminLayout() {
                     <div className="small fw-medium text-body text-truncate" style={{ maxWidth: 120 }}>{adminProfile?.nom_complet || 'Secrétaire'}</div>
                     <div className="small text-muted text-truncate" style={{ maxWidth: 120 }}>{adminProfile?.email}</div>
                   </div>
-                  <i className="bi bi-chevron-down" />
+                  <ChevronDown size={16} />
                 </Dropdown.Toggle>
                 <Dropdown.Menu className="shadow border-0 mt-2">
                   <Dropdown.Header>Mon compte</Dropdown.Header>
-                  <Dropdown.Item onClick={handleSignOut}>
-                    <i className="bi bi-box-arrow-right me-2" />Déconnexion
+                  <Dropdown.Item onClick={handleSignOut} className="d-flex align-items-center">
+                    <LogOut size={16} className="me-2" />Déconnexion
                   </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
 
               <Button variant="outline-danger" size="sm" className="d-flex align-items-center gap-2 d-lg-none" onClick={handleSignOut}>
-                <i className="bi bi-box-arrow-right" />
+                <LogOut size={18} />
               </Button>
             </div>
           </Container>
@@ -120,6 +121,7 @@ export default function AdminLayout() {
 
         <div className="flex-grow-1 p-3 p-md-4 overflow-auto">
           <div className="container-fluid">
+            <BreadcrumbNav />
             <Outlet />
           </div>
         </div>
