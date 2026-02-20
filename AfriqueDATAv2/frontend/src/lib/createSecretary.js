@@ -1,12 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 
-const getFunctionsUrl = () => {
-  const url = process.env.REACT_APP_SUPABASE_URL;
-  if (!url) return null;
-  return `${url.replace(/\/$/, '')}/functions/v1`;
-};
-
 /**
  * Crée un secrétaire (admin) - sans Edge Function.
  * Utilise signUp sur un client temporaire (n'affecte pas la session admin)
