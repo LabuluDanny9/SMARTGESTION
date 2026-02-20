@@ -70,6 +70,7 @@ export default function InscriptionForm() {
           faculty_id: activityFacultyId || null,
           type_participant: form.type_participant || 'etudiant',
           montant: parseFloat(form.montant) || 0,
+          statut_paiement: 'en_attente',
         },
       ]);
       if (error) throw error;
@@ -113,7 +114,7 @@ export default function InscriptionForm() {
           </div>
           <h1 className="text-xl font-bold text-slate-800">Inscription enregistrée</h1>
           <p className="text-slate-500 mt-2 text-sm">
-            Vos informations ont été transmises au secrétariat.
+            Votre inscription a été enregistrée. Le secrétariat approuvera votre inscription avant la séance.
           </p>
           <p className="text-slate-600 font-medium mt-4">{activity.nom}</p>
           <p className="text-slate-400 text-xs mt-1">
@@ -227,7 +228,7 @@ export default function InscriptionForm() {
         )}
 
         <p className="text-center text-xs text-slate-400 mt-8">
-          Les données sont envoyées directement au secrétariat.
+          Remplissez le formulaire pour vous inscrire. Le secrétariat approuvera votre inscription.
         </p>
       </div>
     </div>
