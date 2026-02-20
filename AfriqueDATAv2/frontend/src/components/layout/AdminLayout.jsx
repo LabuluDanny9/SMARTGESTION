@@ -42,14 +42,14 @@ export default function AdminLayout() {
     .slice(0, 2);
 
   return (
-    <div className="d-flex min-vh-100 bg-light">
+    <div className="d-flex min-vh-100 bg-body-secondary">
       {/* Desktop Sidebar - hidden on mobile */}
-      <div className="d-none d-lg-flex flex-column border-end bg-white shadow-sm" style={{ width: sidebarCollapsed ? 72 : 260, transition: 'width 0.3s ease' }}>
+      <div className="d-none d-lg-flex flex-column border-end bg-body shadow-sm" style={{ width: sidebarCollapsed ? 72 : 260, transition: 'width 0.3s ease' }}>
         <Sidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} onNavigate={handleCloseOffcanvas} />
       </div>
 
       {/* Mobile Offcanvas Sidebar */}
-      <Offcanvas show={showOffcanvas} onHide={handleCloseOffcanvas} placement="start" className="d-lg-none" style={{ width: 280 }}>
+      <Offcanvas show={showOffcanvas} onHide={handleCloseOffcanvas} placement="start" className="d-lg-none" style={{ width: 280 }} data-bs-theme="light">
         <Offcanvas.Header closeButton className="bg-primary text-white">
           <Offcanvas.Title>Menu</Offcanvas.Title>
         </Offcanvas.Header>
@@ -60,7 +60,7 @@ export default function AdminLayout() {
 
       <main className="flex-grow-1 d-flex flex-column min-vw-0">
         {/* Top Navbar */}
-        <Navbar expand="lg" className="bg-white border-bottom shadow-sm py-2 px-3 sticky-top">
+        <Navbar expand="lg" className="bg-body border-bottom shadow-sm py-2 px-3 sticky-top">
           <Container fluid className="px-3">
             <Button
               variant="link"
@@ -88,17 +88,17 @@ export default function AdminLayout() {
             </div>
 
             <div className="d-flex align-items-center gap-2">
-              <Button variant="link" className="p-2 text-secondary text-decoration-none" onClick={toggleTheme} aria-label={dark ? 'Mode clair' : 'Mode sombre'}>
-                <i className={dark ? 'bi bi-sun' : 'bi bi-moon'} />
+              <Button variant="outline-secondary" size="sm" className="p-2" onClick={toggleTheme} aria-label={dark ? 'Mode clair' : 'Mode sombre'} title={dark ? 'Mode clair' : 'Mode sombre'}>
+                <i className={dark ? 'bi bi-sun-fill' : 'bi bi-moon-fill'} />
               </Button>
 
               <Dropdown align="end" className="d-none d-sm-block">
-                <Dropdown.Toggle variant="light" className="d-flex align-items-center gap-2 border rounded-pill px-3 py-2" id="profile-dropdown">
+                <Dropdown.Toggle variant="outline-primary" className="d-flex align-items-center gap-2 rounded-pill px-3 py-2" id="profile-dropdown">
                   <div className="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-semibold small" style={{ width: 32, height: 32 }}>
                     {initials}
                   </div>
                   <div className="text-start d-none d-md-block">
-                    <div className="small fw-medium text-dark text-truncate" style={{ maxWidth: 120 }}>{adminProfile?.nom_complet || 'Secrétaire'}</div>
+                    <div className="small fw-medium text-body text-truncate" style={{ maxWidth: 120 }}>{adminProfile?.nom_complet || 'Secrétaire'}</div>
                     <div className="small text-muted text-truncate" style={{ maxWidth: 120 }}>{adminProfile?.email}</div>
                   </div>
                   <i className="bi bi-chevron-down" />
@@ -111,7 +111,7 @@ export default function AdminLayout() {
                 </Dropdown.Menu>
               </Dropdown>
 
-              <Button variant="outline-secondary" size="sm" className="d-flex align-items-center gap-2 d-lg-none" onClick={handleSignOut}>
+              <Button variant="outline-danger" size="sm" className="d-flex align-items-center gap-2 d-lg-none" onClick={handleSignOut}>
                 <i className="bi bi-box-arrow-right" />
               </Button>
             </div>

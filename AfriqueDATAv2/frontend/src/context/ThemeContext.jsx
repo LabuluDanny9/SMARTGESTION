@@ -5,7 +5,9 @@ const ThemeContext = createContext();
 export function ThemeProvider({ children }) {
   const [dark, setDark] = useState(() => {
     try {
-      return localStorage.getItem('smart-gestion-theme') === 'dark';
+      const saved = localStorage.getItem('smart-gestion-theme');
+      if (saved) return saved === 'dark';
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
     } catch {
       return false;
     }
@@ -14,9 +16,11 @@ export function ThemeProvider({ children }) {
   useEffect(() => {
     const root = document.documentElement;
     if (dark) {
+      root.setAttribute('data-bs-theme', 'dark');
       root.classList.add('dark');
       localStorage.setItem('smart-gestion-theme', 'dark');
     } else {
+      root.setAttribute('data-bs-theme', 'light');
       root.classList.remove('dark');
       localStorage.setItem('smart-gestion-theme', 'light');
     }

@@ -30,10 +30,12 @@ export default function Promotions() {
       if (facRes.error) throw facRes.error;
       setPromotions(promRes.data || []);
       setFacultes(facRes.data || []);
-      setDepartments(deptRes.data || []);
+      setDepartments(deptRes.error ? [] : (deptRes.data || []));
     } catch (err) {
       toast.error(err?.message || 'Erreur de chargement');
       setPromotions([]);
+      setFacultes([]);
+      setDepartments([]);
     } finally {
       setLoading(false);
     }
@@ -87,7 +89,8 @@ export default function Promotions() {
   async function handleSubmit(e) {
     e.preventDefault();
     const nom = form.nom?.trim();
-    if (!form.faculty_id) {
+    const facultyId = (form.faculty_id || '').trim();
+    if (!facultyId) {
       toast.error('Sélectionnez une faculté');
       return;
     }
@@ -95,15 +98,16 @@ export default function Promotions() {
       toast.error('Le nom est requis');
       return;
     }
-    const deptId = form.department_id || null;
-    const annee = form.annee ? parseInt(form.annee, 10) : null;
+    const deptId = (form.department_id || '').trim() || null;
+    const anneeRaw = form.annee ? String(form.annee).trim() : '';
+    const annee = anneeRaw ? (parseInt(anneeRaw, 10) || null) : null;
 
     setSubmitting(true);
     try {
       const payload = {
-        faculty_id: form.faculty_id,
+        faculty_id: facultyId,
         nom,
-        annee,
+        ...(annee != null && { annee }),
       };
       if (deptId) payload.department_id = deptId;
       if (modal.item) payload.updated_at = new Date().toISOString();
@@ -126,12 +130,15 @@ export default function Promotions() {
       } else {
         const { data, error } = await supabase
           .from('promotions')
-          .insert([{ ...payload }])
+          .insert([payload])
           .select()
           .single();
         if (error) {
           if (error.code === '23505' || error.message?.includes('unique') || error.message?.includes('duplicate')) {
             throw new Error('Une promotion avec ce nom existe déjà dans cette faculté.');
+          }
+          if (error.code === '42501' || error.message?.toLowerCase().includes('policy') || error.message?.toLowerCase().includes('row level')) {
+            throw new Error('Accès refusé. Vérifiez que vous êtes connecté en tant qu\'administrateur.');
           }
           throw error;
         }
@@ -212,7 +219,7 @@ export default function Promotions() {
         />
       </div>
 
-      <div className="card shadow-sm overflow-hidden">
+      <div className="card shadow-sm overflow-hidden bg-body">
         {loading ? (
           <div className="p-4">
             <TableSkeleton rows={8} cols={5} />
@@ -220,7 +227,7 @@ export default function Promotions() {
         ) : (
           <>
             <Table responsive hover className="mb-0">
-              <thead className="table-light">
+              <thead className="table-secondary">
                 <tr>
                   <th>Nom</th>
                   <th>Faculté</th>
@@ -269,7 +276,7 @@ export default function Promotions() {
               </tbody>
             </Table>
             {filtered.length > PAGE_SIZE && (
-              <div className="d-flex justify-content-between align-items-center px-4 py-3 border-top bg-light">
+              <div className="d-flex justify-content-between align-items-center px-4 py-3 border-top bg-body-secondary">
                 <span className="text-muted small">
                   {from}–{to} sur {filtered.length}
                 </span>

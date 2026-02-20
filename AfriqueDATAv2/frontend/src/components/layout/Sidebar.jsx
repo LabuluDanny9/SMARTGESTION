@@ -104,7 +104,7 @@ export default function Sidebar({ collapsed, onToggle, onNavigate, mobile }) {
 
       {!mobile && (
         <div className="p-2 border-top">
-          <Button variant="link" size="sm" className="w-100 d-flex align-items-center justify-content-center gap-2 text-dark text-decoration-none p-2" onClick={onToggle}>
+          <Button variant="outline-secondary" size="sm" className="w-100 d-flex align-items-center justify-content-center gap-2 text-decoration-none p-2" onClick={onToggle}>
             <i className={`bi bi-chevron-${collapsed ? 'right' : 'left'}`} />
             {!collapsed && <span className="small">Réduire</span>}
           </Button>
