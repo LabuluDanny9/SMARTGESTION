@@ -27,16 +27,39 @@ export default function InscriptionForm() {
   }, [activity]);
 
   async function loadData() {
-    const { data: act } = await supabase
-      .from('activities')
-      .select('*, activity_types(nom), promotions(faculty_id)')
-      .eq('id', activityId)
-      .eq('actif', true)
-      .single();
-    const countRes = act ? await supabase.from('participations').select('id', { count: 'exact', head: true }).eq('activity_id', activityId) : null;
-    const count = countRes?.count ?? 0;
-    setActivity(act ? { ...act, _participationCount: count } : null);
-    setLoading(false);
+    if (!activityId) {
+      setActivity(null);
+      setLoading(false);
+      return;
+    }
+    try {
+      const { data: act, error } = await supabase
+        .from('activities')
+        .select('*, activity_types(nom), promotions(faculty_id)')
+        .eq('id', activityId)
+        .maybeSingle();
+      if (error) throw error;
+      if (!act) {
+        setActivity(null);
+        setLoading(false);
+        return;
+      }
+      if (!act.actif) {
+        setActivity(null);
+        setLoading(false);
+        return;
+      }
+      const { count } = await supabase
+        .from('participations')
+        .select('id', { count: 'exact', head: true })
+        .eq('activity_id', activityId);
+      setActivity({ ...act, _participationCount: count ?? 0 });
+    } catch (err) {
+      console.error('InscriptionForm loadData:', err);
+      setActivity(null);
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleSubmit(e) {
@@ -83,7 +106,7 @@ export default function InscriptionForm() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+      <div className="inscription-form-page min-h-screen flex items-center justify-center bg-slate-50 p-4">
         <div className="animate-spin rounded-full h-12 w-12 border-2 border-primary-500 border-t-transparent" />
       </div>
     );
@@ -91,10 +114,12 @@ export default function InscriptionForm() {
 
   if (!activity) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+      <div className="inscription-form-page min-h-screen flex items-center justify-center bg-slate-50 p-4">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 max-w-sm text-center">
+          <img src="/logo-salle-numerique.png" alt="Salle du Numérique" className="w-12 h-12 mx-auto mb-4 object-contain" />
           <h1 className="text-xl font-bold text-slate-800">Activité introuvable</h1>
           <p className="text-slate-500 mt-2 text-sm">Ce lien n'est plus valide ou l'activité a été désactivée.</p>
+          {!activityId && <p className="text-amber-600 text-sm mt-3">Lien incomplet. Scannez le QR code de l&apos;activité.</p>}
         </div>
       </div>
     );
@@ -107,7 +132,7 @@ export default function InscriptionForm() {
   /* Confirmation screen */
   if (submitted) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+      <div className="inscription-form-page min-h-screen bg-slate-50 flex items-center justify-center p-6">
         <div className="bg-white rounded-3xl shadow-lg border border-slate-100 p-8 max-w-sm w-full text-center">
           <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-primary-600" />
@@ -128,7 +153,7 @@ export default function InscriptionForm() {
 
   /* Registration form */
   return (
-    <div className="min-h-screen bg-slate-50 pb-8" style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}>
+    <div className="inscription-form-page min-h-screen bg-slate-50 pb-8" style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}>
       <div className="max-w-md mx-auto px-4 py-6">
         {/* Header */}
         <div className="text-center mb-8">

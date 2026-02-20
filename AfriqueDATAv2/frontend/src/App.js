@@ -31,6 +31,8 @@ function App() {
           {/* Formulaire public QR - sans authentification (workflow QR) */}
           <Route path="/register/:activityId" element={<InscriptionForm />} />
           <Route path="/inscription/:activityId" element={<InscriptionForm />} />
+          <Route path="/register" element={<InscriptionForm />} />
+          <Route path="/inscription" element={<InscriptionForm />} />
           <Route path="/login" element={<Login />} />
           {/* Admin - protégé */}
           <Route

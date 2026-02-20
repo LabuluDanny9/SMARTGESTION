@@ -151,6 +151,14 @@ $box-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 
 .rotate-45 { transform: rotate(45deg); }
 
+// Formulaire inscription publique (QR) - garantir l'affichage
+.inscription-form-page {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column;
+  background-color: #f8fafc !important;
+}
+
 // Print
 @media print {
   .sidebar, .navbar, .offcanvas, .btn, .print-hide { display: none !important; }
