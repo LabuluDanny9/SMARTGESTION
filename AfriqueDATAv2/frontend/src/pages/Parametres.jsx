@@ -68,11 +68,7 @@ export default function Parametres() {
       setAddModal(false);
       loadSecretaries();
     } catch (err) {
-      const msg = err?.message || 'Erreur lors de l\'ajout';
-      toast.error(msg);
-      if (msg.includes('fetch') || msg.includes('404') || msg.includes('Failed')) {
-        toast('Déployez l\'Edge Function "create-secretary" (voir supabase/functions/create-secretary/README.md)', { duration: 6000 });
-      }
+      toast.error(err?.message || 'Erreur lors de l\'ajout');
     } finally {
       setSubmitting(false);
     }
@@ -186,7 +182,7 @@ export default function Parametres() {
         </Modal.Header>
         <Modal.Body>
           <p className="text-muted small mb-3">
-            Le nouveau secrétaire pourra se connecter avec l'email et le mot de passe que vous définissez.
+            Le nouveau secrétaire pourra se connecter avec l'email et le mot de passe. Si la confirmation par email est activée sur Supabase, il devra d'abord confirmer son email.
           </p>
           <Form onSubmit={handleAddSubmit}>
             <Form.Group className="mb-3">

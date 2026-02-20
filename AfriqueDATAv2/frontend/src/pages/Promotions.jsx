@@ -102,11 +102,11 @@ export default function Promotions() {
     try {
       const payload = {
         faculty_id: form.faculty_id,
-        department_id: deptId,
         nom,
         annee,
-        updated_at: new Date().toISOString(),
       };
+      if (deptId) payload.department_id = deptId;
+      if (modal.item) payload.updated_at = new Date().toISOString();
 
       if (modal.item) {
         const { data, error } = await supabase
@@ -126,10 +126,15 @@ export default function Promotions() {
       } else {
         const { data, error } = await supabase
           .from('promotions')
-          .insert([payload])
+          .insert([{ ...payload }])
           .select()
           .single();
-        if (error) throw error;
+        if (error) {
+          if (error.code === '23505' || error.message?.includes('unique') || error.message?.includes('duplicate')) {
+            throw new Error('Une promotion avec ce nom existe déjà dans cette faculté.');
+          }
+          throw error;
+        }
         const enriched = {
           ...data,
           faculties: { nom: facultes.find((f) => f.id === data.faculty_id)?.nom },
