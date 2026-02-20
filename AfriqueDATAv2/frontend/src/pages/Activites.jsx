@@ -220,7 +220,7 @@ export default function Activites() {
 
   const qrUrl = modal.item ? getRegistrationUrl(modal.item.id) : '';
 
-  if (loading) {
+  if (loading && activities.length === 0) {
     return (
       <div className="flex justify-center py-16">
         <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary-500 border-t-transparent" />

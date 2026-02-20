@@ -69,7 +69,7 @@ export default function Dashboard() {
       try {
         const [actRes, partRes] = await Promise.all([
           supabase.from('activities').select('id', { count: 'exact', head: true }),
-          supabase.from('participations').select('nom_complet, montant, type_participant, statut_paiement, created_at, activities(nom)').order('created_at', { ascending: false }).limit(200),
+          supabase.from('participations').select('nom_complet, montant, type_participant, statut_paiement, created_at, activities(nom)').order('created_at', { ascending: false }).limit(100),
         ]);
         const participations = partRes.data || [];
         const totalEncaisse = participations.reduce((s, p) => s + Number(p.montant), 0);

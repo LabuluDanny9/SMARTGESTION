@@ -59,7 +59,22 @@ Dans **Settings** → **Environment Variables**, ajoutez :
 
 ---
 
-## 6. Configuration Supabase (CORS)
+## 6. Edge Function (ajout de secrétaires)
+
+Pour permettre d'ajouter des secrétaires depuis l'app :
+
+```bash
+cd AfriqueDATAv2
+supabase login
+supabase link --project-ref VOTRE_PROJECT_REF
+supabase functions deploy create-secretary
+```
+
+Exécutez aussi la migration `012_admin_profiles_policies.sql` dans Supabase → SQL Editor.
+
+---
+
+## 7. Configuration Supabase (CORS)
 
 Dans le dashboard Supabase → **Authentication** → **URL Configuration** :
 
@@ -68,7 +83,7 @@ Dans le dashboard Supabase → **Authentication** → **URL Configuration** :
 
 ---
 
-## 7. Mises à jour
+## 8. Mises à jour
 
 Chaque `git push` sur la branche `main` déclenche un nouveau déploiement automatique.
 

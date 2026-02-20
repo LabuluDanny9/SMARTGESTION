@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { Plus, Pencil, Trash2, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DataTable from '../components/ui/DataTable';
+import TableSkeleton from '../components/ui/TableSkeleton';
 
 const PAGE_SIZE = 10;
 
@@ -112,8 +113,12 @@ export default function Facultes() {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-16">
-        <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary-500 border-t-transparent" />
+      <div className="animate-fade-in">
+        <div className="skeleton mb-3" style={{ width: 180, height: 28 }} />
+        <div className="skeleton mb-4" style={{ width: 280, height: 20 }} />
+        <div className="card p-4">
+          <TableSkeleton rows={6} cols={3} />
+        </div>
       </div>
     );
   }

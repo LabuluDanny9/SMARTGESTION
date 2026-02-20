@@ -74,6 +74,12 @@ export function AuthProvider({ children }) {
     await supabase.auth.signOut();
   };
 
+  const refreshProfile = async () => {
+    if (user?.id) {
+      await fetchAdminProfileWithRetry(user.id);
+    }
+  };
+
   const value = {
     user,
     adminProfile,
@@ -81,6 +87,7 @@ export function AuthProvider({ children }) {
     loading,
     signIn,
     signOut,
+    refreshProfile,
   };
 
   return (
