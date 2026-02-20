@@ -20,6 +20,7 @@ import Parametres from './pages/Parametres';
 import Analytics from './pages/Analytics';
 import InscriptionForm from './pages/InscriptionForm';
 import ReserveForm from './pages/ReserveForm';
+import ReservationCalendrier from './pages/ReservationCalendrier';
 import Reservations from './pages/Reservations';
 import './App.css';
 
@@ -36,7 +37,7 @@ function App() {
           <Route path="/register" element={<InscriptionForm />} />
           <Route path="/inscription" element={<InscriptionForm />} />
           <Route path="/reserve/:activityId" element={<ReserveForm />} />
-          <Route path="/reserve" element={<ReserveForm />} />
+          <Route path="/reserve" element={<ReservationCalendrier />} />
           <Route path="/login" element={<Login />} />
           {/* Admin - protégé */}
           <Route

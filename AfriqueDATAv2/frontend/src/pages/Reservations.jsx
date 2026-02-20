@@ -16,6 +16,7 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { Button, Card, Badge, Dropdown, Form, Modal, InputGroup } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 const STATUS_CONFIG = {
@@ -44,7 +45,11 @@ export default function Reservations() {
 
   const loadData = useCallback(async () => {
     try {
-      await supabase.rpc('expire_old_reservations').catch(() => {});
+      try {
+        await supabase.rpc('expire_old_reservations');
+      } catch (_) {
+        /* fonction RPC inexistante ou erreur ignorée */
+      }
       const [resRes, actRes] = await Promise.all([
         supabase.from('reservations').select('*, activities(id, nom, date_debut, heure_debut, prix_default, activity_types(nom))').order('created_at', { ascending: false }),
         supabase.from('activities').select('id, nom').eq('actif', true).order('nom'),
@@ -173,6 +178,9 @@ export default function Reservations() {
         <div>
           <h1 className="h3 mb-1 fw-bold">Réservations</h1>
           <p className="text-muted small mb-0">Validez ou refusez les réservations d&apos;activités</p>
+          <Link to="/reserve" target="_blank" rel="noopener noreferrer" className="small text-primary-600">
+            Ouvrir le calendrier public (formateurs / utilisateurs)
+          </Link>
         </div>
         <div className="d-flex align-items-center gap-2">
           <Button

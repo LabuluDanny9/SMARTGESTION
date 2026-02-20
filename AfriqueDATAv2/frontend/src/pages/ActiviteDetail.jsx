@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { exportActivityToExcel, exportActivityToPDF, exportActivityToExcelCotation, exportActivityToPDFCotation } from '../lib/exports';
 import { getRegistrationUrl } from '../lib/registrationUrl';
-import { getReservationUrl } from '../lib/reservationUrl';
+import { getReservationUrl, getReservationCalendarUrl } from '../lib/reservationUrl';
 import toast from 'react-hot-toast';
 
 const STATUT_LABEL = { en_attente: 'En attente', paye: 'Payé', valide: 'Validé' };
@@ -289,6 +289,12 @@ export default function ActiviteDetail() {
               >
                 <Copy className="w-4 h-4" /> Copier le lien de réservation
               </button>
+              <p className="text-xs text-slate-400 mt-2">
+                <a href={getReservationCalendarUrl()} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">
+                  Calendrier des activités
+                </a>
+                {' '}– pour formateurs et utilisateurs
+              </p>
             </div>
           </div>
 

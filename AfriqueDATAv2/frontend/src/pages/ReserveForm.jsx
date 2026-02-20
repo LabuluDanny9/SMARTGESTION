@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { CheckCircle } from 'lucide-react';
 
@@ -151,13 +151,16 @@ export default function ReserveForm() {
     );
   }
 
-  if (!activity) {
+  if (!activity && activityId) {
     return (
       <div className="inscription-form-page min-h-screen flex items-center justify-center bg-slate-50 p-4">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 max-w-sm text-center">
           <img src="/logo-salle-numerique.png" alt="Salle du Numérique" className="w-12 h-12 mx-auto mb-4 object-contain" />
           <h1 className="text-xl font-bold text-slate-800">Activité introuvable</h1>
           <p className="text-slate-500 mt-2 text-sm">Ce lien n&apos;est plus valide ou l&apos;activité a été désactivée.</p>
+          <Link to="/reserve" className="inline-block mt-4 px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-medium hover:bg-primary-700">
+            Voir le calendrier des activités
+          </Link>
         </div>
       </div>
     );
@@ -197,6 +200,12 @@ export default function ReserveForm() {
             <p className="text-sm text-slate-500 mt-0.5">
               {activity.activity_types?.nom} • {activity.date_debut} {activity.heure_debut}
             </p>
+            <Link
+              to="/reserve"
+              className="inline-block mt-2 text-xs text-primary-600 hover:text-primary-700 font-medium"
+            >
+              ← Changer d&apos;activité (calendrier)
+            </Link>
           </div>
         </div>
 
