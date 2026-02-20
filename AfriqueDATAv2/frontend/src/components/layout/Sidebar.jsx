@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  CalendarCheck,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
@@ -33,6 +34,7 @@ const sectionsConfig = [
   { label: 'ACTIVITÉS', items: [
     { path: '/types-activite', Icon: Tags, label: "Types d'activité", badgeKey: 'types' },
     { path: '/activites', Icon: CalendarDays, label: 'Activités', badgeKey: 'activites' },
+    { path: '/reservations', Icon: CalendarCheck, label: 'Réservations', badgeKey: 'reservations' },
   ] },
   { label: 'FINANCE', items: [
     { path: '/paiements', Icon: Wallet, label: 'Paiements', badgeKey: 'enAttente' },
@@ -47,17 +49,19 @@ export default function Sidebar({ collapsed, onToggle, onNavigate, mobile }) {
   useEffect(() => {
     async function loadBadges() {
       try {
-        const [act, part, etu, vis] = await Promise.all([
+        const [act, part, etu, vis, resPending] = await Promise.all([
           supabase.from('activities').select('id', { count: 'exact', head: true }),
           supabase.from('participations').select('id').eq('statut_paiement', 'en_attente'),
           supabase.from('students').select('id', { count: 'exact', head: true }),
           supabase.from('visitors').select('id', { count: 'exact', head: true }),
+          supabase.from('reservations').select('id').eq('status', 'pending').catch(() => ({ data: [] })),
         ]);
         setBadges({
           activites: act.count || 0,
           enAttente: part.data?.length || 0,
           etudiants: etu.count || 0,
           visiteurs: vis.count || 0,
+          reservations: (resPending?.data?.length ?? 0) || 0,
         });
       } catch {
         setBadges({});
@@ -85,7 +89,7 @@ export default function Sidebar({ collapsed, onToggle, onNavigate, mobile }) {
         {!collapsed && (
           <>
             <span className="flex-grow-1 text-truncate ms-2">{label}</span>
-            {count != null && count > 0 && badgeKey === 'enAttente' && (
+            {count != null && count > 0 && (badgeKey === 'enAttente' || badgeKey === 'reservations') && (
               <span className="badge bg-warning text-dark ms-2 animate-pulse-badge">{count}</span>
             )}
           </>

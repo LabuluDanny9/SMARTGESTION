@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { exportActivityToExcel, exportActivityToPDF, exportActivityToExcelCotation, exportActivityToPDFCotation } from '../lib/exports';
 import { getRegistrationUrl } from '../lib/registrationUrl';
+import { getReservationUrl } from '../lib/reservationUrl';
 import toast from 'react-hot-toast';
 
 const STATUT_LABEL = { en_attente: 'En attente', paye: 'Payé', valide: 'Validé' };
@@ -63,6 +64,7 @@ export default function ActiviteDetail() {
 
   const total = participations.reduce((s, p) => s + Number(p.montant), 0);
   const qrUrl = activity ? getRegistrationUrl(id) : '';
+  const reserveQrUrl = activity ? getReservationUrl(id) : '';
   const capacite = activity?.capacite;
   const atCapacity = capacite != null && participations.length >= capacite;
   const prixDefault = Number(activity?.prix_default) || 0;
@@ -258,8 +260,8 @@ export default function ActiviteDetail() {
           </div>
 
           <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-            <h2 className="text-sm font-semibold text-slate-700 mb-3">QR Code d'inscription</h2>
-            <p className="text-xs text-slate-500 mb-2">Scannez pour ouvrir le formulaire d'enregistrement</p>
+            <h2 className="text-sm font-semibold text-slate-700 mb-3">QR Code – Inscription</h2>
+            <p className="text-xs text-slate-500 mb-2">Scannez pour ouvrir le formulaire d&apos;enregistrement direct</p>
             <div className="bg-slate-50 rounded-xl p-4 flex justify-center">
               <QRCodeSVG value={qrUrl} size={180} />
             </div>
@@ -271,8 +273,23 @@ export default function ActiviteDetail() {
               }}
               className="mt-2 w-full flex items-center justify-center gap-2 py-2 px-3 text-sm font-medium text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
             >
-              <Copy className="w-4 h-4" /> Copier le lien d'inscription
+              <Copy className="w-4 h-4" /> Copier le lien d&apos;inscription
             </button>
+            <div className="mt-4 pt-4 border-t border-slate-100">
+              <p className="text-xs text-slate-500 mb-2">QR Code – Réservation (à valider par le secrétariat)</p>
+              <div className="bg-slate-50 rounded-xl p-3 flex justify-center">
+                <QRCodeSVG value={reserveQrUrl} size={140} />
+              </div>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(reserveQrUrl);
+                  toast.success('Lien de réservation copié !');
+                }}
+                className="mt-2 w-full flex items-center justify-center gap-2 py-2 px-3 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
+              >
+                <Copy className="w-4 h-4" /> Copier le lien de réservation
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

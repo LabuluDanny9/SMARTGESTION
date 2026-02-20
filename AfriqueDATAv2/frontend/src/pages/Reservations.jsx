@@ -12,11 +12,8 @@ import {
   LayoutGrid,
   List,
   MoreVertical,
-  Edit2,
   MessageSquare,
-  BarChart3,
-  CheckSquare,
-  Square,
+  UserPlus,
 } from 'lucide-react';
 import { Button, Card, Badge, Dropdown, Form, Modal, InputGroup } from 'react-bootstrap';
 import toast from 'react-hot-toast';
@@ -42,6 +39,7 @@ export default function Reservations() {
   const [actionModal, setActionModal] = useState({ open: false, type: null, item: null });
   const [adminNote, setAdminNote] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
+  const [convertMontant, setConvertMontant] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [editTime, setEditTime] = useState({ date: '', time: '' });
@@ -50,7 +48,7 @@ export default function Reservations() {
     try {
       await supabase.rpc('expire_old_reservations').catch(() => {});
       const [resRes, actRes] = await Promise.all([
-        supabase.from('reservations').select('*, activities(id, nom, date_debut, heure_debut, activity_types(nom))').order('created_at', { ascending: false }),
+        supabase.from('reservations').select('*, activities(id, nom, date_debut, heure_debut, prix_default, activity_types(nom))').order('created_at', { ascending: false }),
         supabase.from('activities').select('id, nom').eq('actif', true).order('nom'),
       ]);
       setReservations(resRes.data || []);
@@ -134,6 +132,8 @@ export default function Reservations() {
     setActionModal({ open: true, type, item });
     setAdminNote(item?.admin_note || '');
     setRejectionReason(item?.rejection_reason || '');
+    const prix = item?.activities?.prix_default ?? 0;
+    setConvertMontant(String(Number(prix) || ''));
     setEditTime({
       date: item?.desired_date || '',
       time: item?.desired_time_start ? String(item.desired_time_start).slice(0, 5) : '',
@@ -145,6 +145,40 @@ export default function Reservations() {
     if (!item) return;
     setSubmitting(true);
     try {
+      if (type === 'convert') {
+        const montant = parseFloat(convertMontant) || 0;
+        const typeParticipant = item.student_id ? 'etudiant' : 'visiteur';
+        const { data: newPart, error: insErr } = await supabase
+          .from('participations')
+          .insert({
+            activity_id: item.activity_id,
+            nom_complet: item.full_name,
+            faculty_id: item.faculty_id || null,
+            promotion_id: item.promotion_id || null,
+            matricule: item.matricule || null,
+            student_id: item.student_id || null,
+            visitor_id: item.visitor_id || null,
+            type_participant: typeParticipant,
+            montant,
+            statut_paiement: 'en_attente',
+          })
+          .select('id')
+          .single();
+        if (insErr) throw insErr;
+        const { error: updErr } = await supabase
+          .from('reservations')
+          .update({
+            status: 'completed',
+            participation_id: newPart.id,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', item.id);
+        if (updErr) throw updErr;
+        toast.success('Participation créée. Allez dans Paiements pour valider.');
+        setActionModal({ open: false, type: null, item: null });
+        loadData();
+        return;
+      }
       const payload = {
         updated_at: new Date().toISOString(),
         validated_by: adminProfile?.id || null,
@@ -319,10 +353,15 @@ export default function Reservations() {
                             <Button variant="outline-success" size="sm" className="me-1" onClick={() => handleAction('approve', r)}>
                               <CheckCircle size={16} />
                             </Button>
-                            <Button variant="outline-danger" size="sm" onClick={() => handleAction('reject', r)}>
+                            <Button variant="outline-danger" size="sm" className="me-1" onClick={() => handleAction('reject', r)}>
                               <XCircle size={16} />
                             </Button>
                           </>
+                        )}
+                        {r.status === 'approved' && (
+                          <Button variant="outline-primary" size="sm" onClick={() => handleAction('convert', r)} title="Convertir en participation">
+                            <UserPlus size={16} className="me-1" /> Convertir
+                          </Button>
                         )}
                       </td>
                     </tr>
@@ -345,6 +384,7 @@ export default function Reservations() {
             {actionModal.type === 'reject' && 'Refuser'}
             {actionModal.type === 'hold' && 'Mettre en attente'}
             {actionModal.type === 'note' && 'Ajouter une note'}
+            {actionModal.type === 'convert' && 'Convertir en participation'}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -352,6 +392,20 @@ export default function Reservations() {
             <p className="mb-3">
               <strong>{actionModal.item.full_name}</strong> – {actionModal.item.activities?.nom}
             </p>
+          )}
+          {actionModal.type === 'convert' && (
+            <Form.Group className="mb-3">
+              <Form.Label>Montant (FC) *</Form.Label>
+              <Form.Control
+                type="number"
+                min={0}
+                step={0.01}
+                value={convertMontant}
+                onChange={(e) => setConvertMontant(e.target.value)}
+                placeholder="0"
+              />
+              <Form.Text className="text-muted">La participation sera créée en statut &quot;En attente&quot;. Validez le paiement dans Paiements.</Form.Text>
+            </Form.Group>
           )}
           {(actionModal.type === 'reject' || actionModal.type === 'hold' || actionModal.type === 'note') && (
             <Form.Group className="mb-3">
@@ -373,6 +427,7 @@ export default function Reservations() {
             {actionModal.type === 'reject' && 'Refuser'}
             {actionModal.type === 'hold' && 'Enregistrer'}
             {actionModal.type === 'note' && 'Enregistrer'}
+            {actionModal.type === 'convert' && 'Créer la participation'}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -414,6 +469,11 @@ function ReservationCard({ item, onAction, statusConfig }) {
             <XCircle size={14} />
           </Button>
         </div>
+      )}
+      {item.status === 'approved' && (
+        <Button variant="primary" size="sm" className="w-100 mt-2" onClick={() => onAction('convert', item)}>
+          <UserPlus size={14} className="me-2" /> Convertir en participation
+        </Button>
       )}
     </div>
   );

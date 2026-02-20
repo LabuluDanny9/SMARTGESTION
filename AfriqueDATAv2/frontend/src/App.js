@@ -19,6 +19,8 @@ import Exports from './pages/Exports';
 import Parametres from './pages/Parametres';
 import Analytics from './pages/Analytics';
 import InscriptionForm from './pages/InscriptionForm';
+import ReserveForm from './pages/ReserveForm';
+import Reservations from './pages/Reservations';
 import './App.css';
 
 function App() {
@@ -33,6 +35,8 @@ function App() {
           <Route path="/inscription/:activityId" element={<InscriptionForm />} />
           <Route path="/register" element={<InscriptionForm />} />
           <Route path="/inscription" element={<InscriptionForm />} />
+          <Route path="/reserve/:activityId" element={<ReserveForm />} />
+          <Route path="/reserve" element={<ReserveForm />} />
           <Route path="/login" element={<Login />} />
           {/* Admin - protégé */}
           <Route
@@ -52,6 +56,7 @@ function App() {
             <Route path="visiteurs" element={<Visiteurs />} />
             <Route path="activites" element={<Activites />} />
             <Route path="activites/:id" element={<ActiviteDetail />} />
+            <Route path="reservations" element={<Reservations />} />
             <Route path="types-activite" element={<TypesActivite />} />
             <Route path="paiements" element={<Paiements />} />
             <Route path="exports" element={<Exports />} />

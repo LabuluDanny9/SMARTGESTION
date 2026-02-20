@@ -10,6 +10,7 @@ const PATH_LABELS = {
   visiteurs: 'Visiteurs',
   activites: 'Activités',
   'types-activite': "Types d'activité",
+  reservations: 'Réservations',
   paiements: 'Paiements',
   exports: 'Exports',
   parametres: 'Paramètres',
