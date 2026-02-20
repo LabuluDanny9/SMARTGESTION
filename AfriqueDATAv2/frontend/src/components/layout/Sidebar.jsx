@@ -33,6 +33,7 @@ const sectionsConfig = [
   ] },
   { label: 'ACTIVITÉS', items: [
     { path: '/types-activite', Icon: Tags, label: "Types d'activité", badgeKey: 'types' },
+    { path: '/formateurs', Icon: Users, label: 'Formateurs', badgeKey: null },
     { path: '/activites', Icon: CalendarDays, label: 'Activités', badgeKey: 'activites' },
     { path: '/reservations', Icon: CalendarCheck, label: 'Réservations', badgeKey: 'reservations' },
   ] },

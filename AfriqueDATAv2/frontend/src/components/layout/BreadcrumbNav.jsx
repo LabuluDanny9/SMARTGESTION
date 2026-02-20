@@ -9,6 +9,7 @@ const PATH_LABELS = {
   etudiants: 'Étudiants',
   visiteurs: 'Visiteurs',
   activites: 'Activités',
+  formateurs: 'Formateurs',
   'types-activite': "Types d'activité",
   reservations: 'Réservations',
   paiements: 'Paiements',

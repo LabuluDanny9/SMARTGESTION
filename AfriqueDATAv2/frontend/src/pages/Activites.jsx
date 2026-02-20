@@ -102,7 +102,7 @@ export default function Activites() {
 
   const deptsByFaculty = departments.filter((d) => d.faculty_id === form.faculty_id);
   const promosByDept = promotions.filter((p) => p.department_id === form.department_id);
-  const formateursByFaculty = formateurs.filter((f) => f.faculty_id === form.faculty_id);
+  const formateursByFaculty = formateurs;
 
   const typeOptions = types;
 
@@ -356,7 +356,7 @@ export default function Activites() {
                 </div>
                 <p className="text-xs text-slate-500 mt-1">Optionnel : cibler une promotion pour afficher la liste officielle</p>
               </div>
-              {form.faculty_id && formateursByFaculty.length > 0 && (
+              {formateursByFaculty.length > 0 && (
                 <div>
                   <Form.Label className="fw-medium mb-2">Formateur superviseur</Form.Label>
                   <select

@@ -63,7 +63,7 @@ export function AuthProvider({ children }) {
     try {
       const { data, error } = await supabase
         .from('formateur_profiles')
-        .select('id, formateur_id, formateurs(id, nom_complet, email, telephone, type, faculty_id)')
+        .select('id, formateur_id, formateurs(id, nom_complet, email, telephone, type)')
         .eq('id', userId)
         .maybeSingle();
       if (error) return null;

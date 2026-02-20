@@ -12,6 +12,7 @@ import FaculteDetail from './pages/FaculteDetail';
 import Promotions from './pages/Promotions';
 import Etudiants from './pages/Etudiants';
 import Visiteurs from './pages/Visiteurs';
+import Formateurs from './pages/Formateurs';
 import Activites from './pages/Activites';
 import ActiviteDetail from './pages/ActiviteDetail';
 import TypesActivite from './pages/TypesActivite';
@@ -62,6 +63,7 @@ function App() {
             <Route path="promotions" element={<Promotions />} />
             <Route path="etudiants" element={<Etudiants />} />
             <Route path="visiteurs" element={<Visiteurs />} />
+            <Route path="formateurs" element={<Formateurs />} />
             <Route path="activites" element={<Activites />} />
             <Route path="activites/:id" element={<ActiviteDetail />} />
             <Route path="reservations" element={<Reservations />} />

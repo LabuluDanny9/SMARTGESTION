@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { ArrowLeft, Plus, Pencil, Trash2, Upload, ChevronDown, ChevronRight, Download, Users, FlaskConical } from 'lucide-react';
+import { ArrowLeft, Plus, Pencil, Trash2, Upload, ChevronDown, ChevronRight, Download, FlaskConical } from 'lucide-react';
 import { importFromExcel, importFromPDF, downloadTemplate } from '../lib/importStudents';
 import toast from 'react-hot-toast';
-
-const TYPE_FORMATEUR = { formateur: 'Formateur', enseignant: 'Enseignant', assistant: 'Assistant' };
 
 export default function FaculteDetail() {
   const { id } = useParams();
@@ -21,12 +19,8 @@ export default function FaculteDetail() {
   const [formDept, setFormDept] = useState({ nom: '', code: '' });
   const [formPromo, setFormPromo] = useState({ nom: '', annee: '' });
   const [importing, setImporting] = useState(null);
-  const [formateurs, setFormateurs] = useState([]);
   const [pratiques, setPratiques] = useState([]);
-  const [expandedFormateurs, setExpandedFormateurs] = useState(true);
   const [expandedPratiques, setExpandedPratiques] = useState(true);
-  const [modalFormateur, setModalFormateur] = useState({ open: false, item: null });
-  const [formFormateur, setFormFormateur] = useState({ nom_complet: '', email: '', telephone: '', type: 'formateur', specialite: '' });
 
   useEffect(() => {
     loadData();
@@ -41,14 +35,6 @@ export default function FaculteDetail() {
     } catch {
       deptData = [];
     }
-    const formResPromise = (async () => {
-      try {
-        const { data, error } = await supabase.from('formateurs').select('*').eq('faculty_id', id).eq('actif', true).order('nom_complet');
-        return error ? [] : (data || []);
-      } catch {
-        return [];
-      }
-    })();
     const pratResPromise = (async () => {
       try {
         const { data, error } = await supabase.from('activities').select('*, activity_types(nom), formateurs(nom_complet)').eq('faculty_id', id).order('date_debut', { ascending: false });
@@ -57,15 +43,13 @@ export default function FaculteDetail() {
         return [];
       }
     })();
-    const [facRes, promRes, formRes, pratRes] = await Promise.all([
+    const [facRes, promRes, pratRes] = await Promise.all([
       supabase.from('faculties').select('*').eq('id', id).single(),
       supabase.from('promotions').select('*, departments(nom)').eq('faculty_id', id).order('nom'),
-      formResPromise,
       pratResPromise,
     ]);
     setFaculty(facRes.data);
     setDepartments(deptData);
-    setFormateurs(Array.isArray(formRes) ? formRes : []);
     setPratiques(Array.isArray(pratRes) ? pratRes : []);
 
     const byDept = {};
@@ -212,35 +196,6 @@ export default function FaculteDetail() {
     if (error) toast.error(error.message);
     else {
       toast.success('Promotion supprimée');
-      loadData();
-    }
-  }
-
-  async function handleSubmitFormateur(e) {
-    e.preventDefault();
-    try {
-      const payload = { faculty_id: id, ...formFormateur };
-      if (modalFormateur.item) {
-        await supabase.from('formateurs').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', modalFormateur.item.id);
-        toast.success('Formateur modifié');
-      } else {
-        await supabase.from('formateurs').insert([payload]);
-        toast.success('Formateur ajouté');
-      }
-      setModalFormateur({ open: false, item: null });
-      setFormFormateur({ nom_complet: '', email: '', telephone: '', type: 'formateur', specialite: '' });
-      loadData();
-    } catch (err) {
-      toast.error(err.message);
-    }
-  }
-
-  async function handleDeleteFormateur(formateurId) {
-    if (!window.confirm('Désactiver ce formateur ?')) return;
-    const { error } = await supabase.from('formateurs').update({ actif: false, updated_at: new Date().toISOString() }).eq('id', formateurId);
-    if (error) toast.error(error.message);
-    else {
-      toast.success('Formateur désactivé');
       loadData();
     }
   }
@@ -394,49 +349,6 @@ export default function FaculteDetail() {
       </div>
 
       {/* Formateurs / Enseignants */}
-      <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
-        <div
-          className="flex items-center justify-between px-6 py-4 cursor-pointer hover:bg-slate-50/50"
-          onClick={() => setExpandedFormateurs((e) => !e)}
-        >
-          <div className="flex items-center gap-2">
-            {expandedFormateurs ? <ChevronDown className="w-5 h-5 text-slate-400" /> : <ChevronRight className="w-5 h-5 text-slate-400" />}
-            <Users className="w-5 h-5 text-primary-500" />
-            <h2 className="font-semibold text-slate-800">Formateurs / Enseignants</h2>
-            <span className="text-slate-400 text-sm">({formateurs.length})</span>
-          </div>
-          <button
-            onClick={(e) => { e.stopPropagation(); setFormFormateur({ nom_complet: '', email: '', telephone: '', type: 'formateur', specialite: '' }); setModalFormateur({ open: true, item: null }); }}
-            className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-        </div>
-        {expandedFormateurs && (
-          <div className="border-t border-slate-100 p-4">
-            {formateurs.length === 0 ? (
-              <p className="text-slate-400 text-sm">Aucun formateur. Cliquez sur + pour ajouter.</p>
-            ) : (
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {formateurs.map((f) => (
-                  <div key={f.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
-                    <div>
-                      <p className="font-medium text-slate-800">{f.nom_complet}</p>
-                      <p className="text-xs text-slate-500">{TYPE_FORMATEUR[f.type] || f.type}</p>
-                      {f.email && <p className="text-xs text-slate-500">{f.email}</p>}
-                    </div>
-                    <div className="flex gap-1">
-                      <button onClick={() => { setFormFormateur({ nom_complet: f.nom_complet, email: f.email || '', telephone: f.telephone || '', type: f.type || 'formateur', specialite: f.specialite || '' }); setModalFormateur({ open: true, item: f }); }} className="p-1.5 text-slate-500 hover:text-primary-600 rounded"><Pencil className="w-4 h-4" /></button>
-                      <button onClick={() => handleDeleteFormateur(f.id)} className="p-1.5 text-slate-500 hover:text-red-600 rounded"><Trash2 className="w-4 h-4" /></button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
       {/* Pratiques / Manipulations */}
       <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
         <div
@@ -449,9 +361,14 @@ export default function FaculteDetail() {
             <h2 className="font-semibold text-slate-800">Pratiques / Manipulations</h2>
             <span className="text-slate-400 text-sm">({pratiques.length})</span>
           </div>
-          <Link to="/activites" onClick={(e) => e.stopPropagation()} className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg text-sm font-medium">
-            Créer une activité
-          </Link>
+          <div className="d-flex gap-2">
+            <Link to="/formateurs" onClick={(e) => e.stopPropagation()} className="p-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm">
+              Formateurs
+            </Link>
+            <Link to="/activites" onClick={(e) => e.stopPropagation()} className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg text-sm font-medium">
+              Créer une activité
+            </Link>
+          </div>
         </div>
         {expandedPratiques && (
           <div className="border-t border-slate-100 p-4">
@@ -484,26 +401,6 @@ export default function FaculteDetail() {
               <div><label className="block text-sm font-medium mb-2">Code</label><input type="text" value={formDept.code} onChange={(e) => setFormDept({ ...formDept, code: e.target.value })} className="input-field" /></div>
               <div className="flex gap-3 justify-end">
                 <button type="button" onClick={() => setModalDept({ open: false })} className="px-4 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl">Annuler</button>
-                <button type="submit" className="btn-primary">Enregistrer</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Formateur */}
-      {modalFormateur.open && (
-        <div className="modal-overlay" onClick={() => setModalFormateur({ open: false })}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-semibold mb-4">{modalFormateur.item ? 'Modifier le formateur' : 'Nouveau formateur'}</h2>
-            <form onSubmit={handleSubmitFormateur} className="space-y-4">
-              <div><label className="block text-sm font-medium mb-2">Nom complet</label><input type="text" value={formFormateur.nom_complet} onChange={(e) => setFormFormateur({ ...formFormateur, nom_complet: e.target.value })} required className="input-field" placeholder="Prénom et nom" /></div>
-              <div><label className="block text-sm font-medium mb-2">Type</label><select value={formFormateur.type} onChange={(e) => setFormFormateur({ ...formFormateur, type: e.target.value })} className="input-field"><option value="formateur">Formateur</option><option value="enseignant">Enseignant</option><option value="assistant">Assistant</option></select></div>
-              <div><label className="block text-sm font-medium mb-2">Email</label><input type="email" value={formFormateur.email} onChange={(e) => setFormFormateur({ ...formFormateur, email: e.target.value })} className="input-field" placeholder="email@unilu.cd" /></div>
-              <div><label className="block text-sm font-medium mb-2">Téléphone</label><input type="tel" value={formFormateur.telephone} onChange={(e) => setFormFormateur({ ...formFormateur, telephone: e.target.value })} className="input-field" placeholder="+243..." /></div>
-              <div><label className="block text-sm font-medium mb-2">Spécialité</label><input type="text" value={formFormateur.specialite} onChange={(e) => setFormFormateur({ ...formFormateur, specialite: e.target.value })} className="input-field" placeholder="ex: Informatique, Réseaux" /></div>
-              <div className="flex gap-3 justify-end">
-                <button type="button" onClick={() => setModalFormateur({ open: false })} className="px-4 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl">Annuler</button>
                 <button type="submit" className="btn-primary">Enregistrer</button>
               </div>
             </form>
