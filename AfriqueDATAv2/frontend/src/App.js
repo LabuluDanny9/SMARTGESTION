@@ -26,7 +26,7 @@ import ReservationCalendrier from './pages/ReservationCalendrier';
 import Reservations from './pages/Reservations';
 import FormateurLogin from './pages/FormateurLogin';
 import FormateurDashboard from './pages/FormateurDashboard';
-import { ErrorBoundary } from './components/ErrorBoundary';
+import ErrorBoundary from './components/ErrorBoundary';
 import './App.css';
 
 function App() {
