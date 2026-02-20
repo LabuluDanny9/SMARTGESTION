@@ -7,10 +7,12 @@ import Sidebar from './Sidebar';
 import GlobalSearch from '../GlobalSearch';
 import QuickActionsFAB from '../QuickActionsFAB';
 import BreadcrumbNav from './BreadcrumbNav';
-import { Menu, Search, Sun, Moon, ChevronDown, LogOut } from 'lucide-react';
+import AccessCodeModal, { setCrossAccessFormateur } from '../AccessCodeModal';
+import { Menu, Search, Sun, Moon, ChevronDown, LogOut, Users } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function AdminLayout() {
-  const { adminProfile, signOut } = useAuth();
+  const { adminProfile, formateurProfile, isAdmin, isFormateur, verifyCodeForFormateurAccess, signOut } = useAuth();
   const { dark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -30,17 +32,27 @@ export default function AdminLayout() {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/login');
+    navigate('/login?mode=admin');
   };
 
   const handleCloseOffcanvas = () => setShowOffcanvas(false);
 
-  const initials = (adminProfile?.nom_complet || 'SG')
+  const displayProfile = adminProfile || (formateurProfile && {
+    nom_complet: formateurProfile.formateurs?.nom_complet || formateurProfile.formateur?.nom_complet || 'Chargé réservation',
+    email: formateurProfile.formateurs?.email || formateurProfile.formateur?.email || '',
+  });
+  const initials = (displayProfile?.nom_complet || 'SG')
     .split(' ')
     .map((n) => n[0])
     .join('')
     .toUpperCase()
     .slice(0, 2);
+
+  const [showAccessModal, setShowAccessModal] = useState(false);
+  const handleAccessFormateurSuccess = () => {
+    setCrossAccessFormateur();
+    navigate('/formateur');
+  };
 
   return (
     <div className="d-flex min-vh-100 bg-body-secondary">
@@ -99,13 +111,23 @@ export default function AdminLayout() {
                     {initials}
                   </div>
                   <div className="text-start d-none d-md-block">
-                    <div className="small fw-medium text-body text-truncate" style={{ maxWidth: 120 }}>{adminProfile?.nom_complet || 'Secrétaire'}</div>
-                    <div className="small text-muted text-truncate" style={{ maxWidth: 120 }}>{adminProfile?.email}</div>
+                    <div className="small fw-medium text-body text-truncate" style={{ maxWidth: 120 }}>{displayProfile?.nom_complet || 'Secrétaire'}</div>
+                    <div className="small text-muted text-truncate" style={{ maxWidth: 120 }}>{displayProfile?.email}</div>
                   </div>
                   <ChevronDown size={16} />
                 </Dropdown.Toggle>
                 <Dropdown.Menu className="shadow border-0 mt-2">
                   <Dropdown.Header>Mon compte</Dropdown.Header>
+                  {isAdmin && (
+                    <Dropdown.Item onClick={() => setShowAccessModal(true)} className="d-flex align-items-center">
+                      <Users size={16} className="me-2" />Accéder au dashboard Formateur
+                    </Dropdown.Item>
+                  )}
+                  {isFormateur && (
+                    <Dropdown.Item onClick={() => { sessionStorage.removeItem('crossAccessAdmin'); navigate('/formateur'); }} className="d-flex align-items-center">
+                      <Users size={16} className="me-2" />Retour au dashboard Formateur
+                    </Dropdown.Item>
+                  )}
                   <Dropdown.Item onClick={handleSignOut} className="d-flex align-items-center">
                     <LogOut size={16} className="me-2" />Déconnexion
                   </Dropdown.Item>
@@ -129,6 +151,15 @@ export default function AdminLayout() {
 
       <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
       <QuickActionsFAB />
+      <AccessCodeModal
+        show={showAccessModal}
+        onHide={() => setShowAccessModal(false)}
+        title="Accès dashboard Formateur"
+        subtitle="Entrez votre code d'accès personnel (donné à l'inscription) pour accéder au tableau de bord des formateurs."
+        verify={verifyCodeForFormateurAccess}
+        onSuccess={handleAccessFormateurSuccess}
+        onError={(msg) => toast.error(msg)}
+      />
     </div>
   );
 }

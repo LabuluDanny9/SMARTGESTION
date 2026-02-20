@@ -5,7 +5,8 @@ import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import FormateurProtectedRoute from './components/FormateurProtectedRoute';
 import AdminLayout from './components/layout/AdminLayout';
-import Login from './pages/Login';
+import Portal from './pages/Portal';
+import UnifiedLogin from './pages/UnifiedLogin';
 import Dashboard from './pages/Dashboard';
 import Facultes from './pages/Facultes';
 import FaculteDetail from './pages/FaculteDetail';
@@ -24,7 +25,6 @@ import InscriptionForm from './pages/InscriptionForm';
 import ReserveForm from './pages/ReserveForm';
 import ReservationCalendrier from './pages/ReservationCalendrier';
 import Reservations from './pages/Reservations';
-import FormateurLogin from './pages/FormateurLogin';
 import FormateurDashboard from './pages/FormateurDashboard';
 import ErrorBoundary from './components/ErrorBoundary';
 import './App.css';
@@ -36,20 +36,21 @@ function App() {
       <AuthProvider>
         <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
         <Routes>
-          {/* Formulaire public QR - sans authentification (workflow QR) */}
+          {/* Portail d'entrée - choix du mode */}
+          <Route path="/" element={<Portal />} />
+          <Route path="/login" element={<UnifiedLogin />} />
+          {/* Formulaire public QR - sans authentification */}
           <Route path="/register/:activityId" element={<InscriptionForm />} />
           <Route path="/inscription/:activityId" element={<InscriptionForm />} />
           <Route path="/register" element={<InscriptionForm />} />
           <Route path="/inscription" element={<InscriptionForm />} />
           <Route path="/reserve/:activityId" element={<ReserveForm />} />
           <Route path="/reserve" element={<ReservationCalendrier />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/formateur/login" element={<ErrorBoundary><FormateurLogin /></ErrorBoundary>} />
           {/* Formateur - protégé */}
           <Route path="/formateur" element={<ErrorBoundary><FormateurProtectedRoute><FormateurDashboard /></FormateurProtectedRoute></ErrorBoundary>} />
           {/* Admin - protégé */}
           <Route
-            path="/"
+            path="/admin"
             element={
               <ProtectedRoute>
                 <AdminLayout />

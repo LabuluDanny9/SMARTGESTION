@@ -293,7 +293,7 @@ export default function Reservations() {
                     <tr key={r.id}>
                       <td className="fw-medium">{r.full_name}</td>
                       <td>
-                        <Link to={`/activites/${r.activity_id}`} className="text-decoration-none">
+                        <Link to={`/admin/activites/${r.activity_id}`} className="text-decoration-none">
                           {r.activities?.nom || '-'}
                         </Link>
                       </td>

@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import AccessCodeModal, { setCrossAccessAdmin, getCrossAccessFormateur } from '../components/AccessCodeModal';
+import toast from 'react-hot-toast';
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -15,6 +17,8 @@ import {
   TrendingUp,
   MapPin,
   User,
+  FileCheck,
+  KeyRound,
 } from 'lucide-react';
 
 const JOURS_SEMAINE = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
@@ -42,7 +46,7 @@ function formatDateKey(y, m, d) {
 }
 
 export default function FormateurDashboard() {
-  const { formateurProfile, signOut } = useAuth();
+  const { user, formateurProfile, adminProfile, isAdmin, verifyCodeForAdminAccess, signOut } = useAuth();
   const navigate = useNavigate();
   const formateurData = formateurProfile?.formateurs || formateurProfile?.formateur;
   const formateurId = formateurProfile?.formateur_id || formateurData?.id;
@@ -55,6 +59,20 @@ export default function FormateurDashboard() {
     return { year: d.getFullYear(), month: d.getMonth() };
   });
   const [activeTab, setActiveTab] = useState('calendrier');
+  const [showAccessModal, setShowAccessModal] = useState(false);
+  const [showMyCodeModal, setShowMyCodeModal] = useState(false);
+  const [myCode, setMyCode] = useState(null);
+
+  const handleAccessAdminSuccess = () => {
+    setCrossAccessAdmin();
+    navigate('/admin');
+  };
+
+  const handleShowMyCode = async () => {
+    const { data } = await supabase.from('formateur_profiles').select('code_acces_admin').eq('id', user?.id).single();
+    setMyCode(data?.code_acces_admin);
+    setShowMyCodeModal(true);
+  };
 
   const loadData = useCallback(async () => {
     if (!formateurId) return;
@@ -120,12 +138,13 @@ export default function FormateurDashboard() {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/formateur/login');
+    navigate('/login?mode=formateur');
   };
 
-  const nomComplet = formateurData?.nom_complet || 'Formateur';
+  const nomComplet = formateurData?.nom_complet || adminProfile?.nom_complet || 'Formateur';
+  const isAdminViewingFormateur = isAdmin && getCrossAccessFormateur();
 
-  if (!formateurId) {
+  if (!formateurId && !isAdminViewingFormateur) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
         <div className="bg-white rounded-2xl border border-slate-200 p-8 max-w-md text-center">
@@ -144,6 +163,38 @@ export default function FormateurDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/20">
+      <AccessCodeModal
+        show={showAccessModal}
+        onHide={() => setShowAccessModal(false)}
+        title="Accès dashboard Secrétaire"
+        subtitle="Entrez votre code d'accès personnel (donné à l'inscription) pour accéder au tableau de bord administration."
+        verify={verifyCodeForAdminAccess}
+        onSuccess={handleAccessAdminSuccess}
+        onError={(msg) => toast.error(msg)}
+      />
+      {showMyCodeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <KeyRound size={24} className="text-indigo-600" />
+              <h3 className="font-bold text-slate-800">Votre code d&apos;accès</h3>
+            </div>
+            <p className="text-slate-600 text-sm mb-4">
+              Ce code vous permet d&apos;accéder au dashboard Secrétaire depuis le menu.
+            </p>
+            <div className="text-center p-4 bg-indigo-50 rounded-xl mb-4">
+              <p className="text-2xl font-bold text-indigo-700" style={{ letterSpacing: 6 }}>{myCode || '-'}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowMyCodeModal(false)}
+              className="w-full py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700"
+            >
+              Fermer
+            </button>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-slate-100 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
@@ -153,20 +204,54 @@ export default function FormateurDashboard() {
             </div>
             <div>
               <h1 className="text-lg font-bold text-slate-800">Espace Formateur</h1>
-              <p className="text-sm text-slate-500">{nomComplet}</p>
+              <p className="text-sm text-slate-500">{nomComplet}{isAdminViewingFormateur ? ' (mode secrétaire)' : ''}</p>
             </div>
           </div>
-          <button
-            onClick={handleSignOut}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-800 transition-colors"
-          >
-            <LogOut size={18} />
-            Déconnexion
-          </button>
+          <div className="flex items-center gap-2">
+            {isAdminViewingFormateur ? (
+              <button
+                onClick={() => { sessionStorage.removeItem('crossAccessFormateur'); navigate('/admin'); }}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-primary-600 hover:bg-primary-50 transition-colors"
+              >
+                <FileCheck size={18} />
+                Retour au dashboard Secrétaire
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleShowMyCode}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-slate-100 text-sm"
+                  title="Voir mon code d'accès"
+                >
+                  <KeyRound size={16} />
+                  Mon code
+                </button>
+                <button
+                  onClick={() => setShowAccessModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-primary-600 hover:bg-primary-50 transition-colors"
+                >
+                  <FileCheck size={18} />
+                  Accéder au dashboard Secrétaire
+                </button>
+              </div>
+            )}
+            <button
+              onClick={handleSignOut}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-800 transition-colors"
+            >
+              <LogOut size={18} />
+              Déconnexion
+            </button>
+          </div>
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-6">
+        {isAdminViewingFormateur && (
+          <div className="mb-6 p-4 rounded-xl bg-primary-50 border border-primary-100 text-primary-800 text-sm">
+            Vous consultez l&apos;interface formateur en mode secrétaire. Les réservations affichées sont vides car vous n&apos;êtes pas lié à un formateur.
+          </div>
+        )}
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
           {['pending', 'approved', 'rejected', 'expired', 'completed'].map((status) => {

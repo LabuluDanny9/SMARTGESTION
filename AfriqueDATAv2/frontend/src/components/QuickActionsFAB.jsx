@@ -4,8 +4,8 @@ import { Dropdown } from 'react-bootstrap';
 import { CalendarPlus, UserPlus, FileDown, Plus } from 'lucide-react';
 
 const actions = [
-  { Icon: CalendarPlus, label: 'Nouvelle activité', path: '/activites' },
-  { Icon: UserPlus, label: 'Nouvel étudiant', path: '/etudiants' },
+  { Icon: CalendarPlus, label: 'Nouvelle activité', path: '/admin/activites' },
+  { Icon: UserPlus, label: 'Nouvel étudiant', path: '/admin/etudiants' },
   { Icon: FileDown, label: 'Exporter', path: '/exports' },
 ];
 

@@ -78,7 +78,7 @@ export default function GlobalSearch({ open, onClose }) {
                     <CalendarDays size={14} /> Activités
                   </p>
                   {results.activities.map((a) => (
-                    <button key={a.id} onClick={() => handleSelect(`/activites/${a.id}`)} className="w-100 d-flex align-items-center justify-content-between px-3 py-2 rounded border-0 bg-transparent hover-bg-light text-start text-dark transition-colors">
+                    <button key={a.id} onClick={() => handleSelect(`/admin/activites/${a.id}`)} className="w-100 d-flex align-items-center justify-content-between px-3 py-2 rounded border-0 bg-transparent hover-bg-light text-start text-dark transition-colors">
                       <span className="fw-medium text-truncate">{a.nom}</span>
                       <ChevronRight size={18} className="text-muted flex-shrink-0" />
                     </button>
@@ -91,7 +91,7 @@ export default function GlobalSearch({ open, onClose }) {
                     <Users size={14} /> Participants
                   </p>
                   {results.students.map((p) => (
-                    <button key={p.id} onClick={() => handleSelect(`/activites/${p.activity_id}`)} className="w-100 d-flex align-items-center justify-content-between px-3 py-2 rounded border-0 bg-transparent hover-bg-light text-start text-dark transition-colors">
+                    <button key={p.id} onClick={() => handleSelect(`/admin/activites/${p.activity_id}`)} className="w-100 d-flex align-items-center justify-content-between px-3 py-2 rounded border-0 bg-transparent hover-bg-light text-start text-dark transition-colors">
                       <span className="fw-medium text-truncate">{p.nom_complet}</span>
                       <span className="small text-muted text-truncate ms-2" style={{ maxWidth: 120 }}>{p.activities?.nom}</span>
                     </button>

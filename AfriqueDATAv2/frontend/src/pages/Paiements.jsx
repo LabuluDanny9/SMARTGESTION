@@ -112,7 +112,7 @@ export default function Paiements() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-600">
-                      <Link to={p.activity_id ? `/activites/${p.activity_id}` : '#'} className="text-primary-600 hover:underline inline-flex items-center gap-1">
+                      <Link to={p.activity_id ? `/admin/activites/${p.activity_id}` : '#'} className="text-primary-600 hover:underline inline-flex items-center gap-1">
                         {p.activities?.nom || '-'}
                         {p.activity_id && <ChevronRight size={14} />}
                       </Link>
@@ -166,7 +166,7 @@ export default function Paiements() {
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-600">
                     {p.activity_id ? (
-                      <Link to={`/activites/${p.activity_id}`} className="text-primary-600 hover:underline inline-flex items-center gap-1">
+                      <Link to={`/admin/activites/${p.activity_id}`} className="text-primary-600 hover:underline inline-flex items-center gap-1">
                         {p.activities?.nom || '-'}
                         <ChevronRight size={14} />
                       </Link>

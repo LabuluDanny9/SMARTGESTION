@@ -1,9 +1,11 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getCrossAccessAdmin } from './AccessCodeModal';
 
 export default function ProtectedRoute({ children }) {
-  const { isAdmin, loading } = useAuth();
+  const { isAdmin, isFormateur, loading } = useAuth();
   const location = useLocation();
+  const hasCrossAccess = getCrossAccessAdmin();
 
   if (loading) {
     return (
@@ -15,8 +17,8 @@ export default function ProtectedRoute({ children }) {
     );
   }
 
-  if (!isAdmin) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  if (!isAdmin && !(isFormateur && hasCrossAccess)) {
+    return <Navigate to="/login?mode=admin" state={{ from: location }} replace />;
   }
 
   return children;

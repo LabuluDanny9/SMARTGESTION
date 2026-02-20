@@ -3,22 +3,57 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { createSecretary } from '../lib/createSecretary';
 import { Button, Card, Form, Modal, Table, Spinner } from 'react-bootstrap';
-import { Pencil, UserPlus } from 'lucide-react';
+import { Pencil, UserPlus, KeyRound, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function Parametres() {
   const { adminProfile, user, refreshProfile } = useAuth();
   const [secretaries, setSecretaries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [myAccessCode, setMyAccessCode] = useState(null);
   const [editModal, setEditModal] = useState(false);
   const [addModal, setAddModal] = useState(false);
   const [editForm, setEditForm] = useState({ nom_complet: '' });
   const [addForm, setAddForm] = useState({ email: '', password: '', nom_complet: '' });
   const [submitting, setSubmitting] = useState(false);
+  const [newSecretaryCode, setNewSecretaryCode] = useState(null);
+  const [reservationSettings, setReservationSettings] = useState({ auto_expire_minutes: 30 });
+  const [savingReservation, setSavingReservation] = useState(false);
 
   useEffect(() => {
     loadSecretaries();
   }, []);
+
+  useEffect(() => {
+    async function loadMyCode() {
+      const { data } = await supabase.from('admin_profiles').select('code_acces_formateur').eq('id', user?.id).single();
+      setMyAccessCode(data?.code_acces_formateur);
+    }
+    if (user?.id) loadMyCode();
+  }, [user?.id]);
+
+  useEffect(() => {
+    async function loadReservationSettings() {
+      const { data } = await supabase.from('reservation_settings').select('key, value').eq('key', 'auto_expire_minutes').maybeSingle();
+      const mins = data?.value?.minutes ?? 30;
+      setReservationSettings((s) => ({ ...s, auto_expire_minutes: mins }));
+    }
+    loadReservationSettings();
+  }, []);
+
+  async function saveReservationSettings() {
+    setSavingReservation(true);
+    try {
+      const mins = Math.max(5, Math.min(1440, Number(reservationSettings.auto_expire_minutes) || 30));
+      await supabase.from('reservation_settings').upsert({ key: 'auto_expire_minutes', value: { minutes: mins } }, { onConflict: 'key' });
+      setReservationSettings((s) => ({ ...s, auto_expire_minutes: mins }));
+      toast.success('Paramètres de réservation enregistrés.');
+    } catch (err) {
+      toast.error(err?.message || 'Erreur');
+    } finally {
+      setSavingReservation(false);
+    }
+  }
 
   async function loadSecretaries() {
     const { data } = await supabase.from('admin_profiles').select('id, email, nom_complet, created_at').order('nom_complet');
@@ -61,12 +96,14 @@ export default function Parametres() {
       return;
     }
     setSubmitting(true);
+    setNewSecretaryCode(null);
     try {
-      await createSecretary(addForm.email.trim(), addForm.password, addForm.nom_complet.trim());
-      toast.success('Secrétaire ajouté. Il peut se connecter avec son email et mot de passe.');
+      const result = await createSecretary(addForm.email.trim(), addForm.password, addForm.nom_complet.trim());
+      setNewSecretaryCode(result.codeAccesFormateur);
       setAddForm({ email: '', password: '', nom_complet: '' });
       setAddModal(false);
       loadSecretaries();
+      toast.success('Secrétaire ajouté.');
     } catch (err) {
       toast.error(err?.message || 'Erreur lors de l\'ajout');
     } finally {
@@ -97,6 +134,44 @@ export default function Parametres() {
             <div className="col-md-6">
               <label className="text-muted small">Email</label>
               <p className="mb-0 fw-medium">{adminProfile?.email || user?.email || '-'}</p>
+            </div>
+            {myAccessCode && (
+              <div className="col-12 mt-2">
+                <label className="text-muted small d-flex align-items-center gap-1">
+                  <KeyRound size={14} /> Code d&apos;accès dashboard Formateur
+                </label>
+                <p className="mb-0 fw-bold text-primary" style={{ letterSpacing: 4 }}>{myAccessCode}</p>
+                <p className="text-muted small mb-0 mt-1">Utilisez ce code pour accéder au dashboard Formateur depuis le menu.</p>
+              </div>
+            )}
+          </div>
+        </Card.Body>
+      </Card>
+
+      {/* Paramètres réservations */}
+      <Card className="mb-4 shadow-sm">
+        <Card.Header className="d-flex align-items-center gap-2">
+          <Clock size={18} />
+          <span className="fw-semibold">Réservations</span>
+        </Card.Header>
+        <Card.Body>
+          <div className="row g-3 align-items-end">
+            <div className="col-md-4">
+              <Form.Label className="text-muted small">Expiration auto (minutes)</Form.Label>
+              <Form.Control
+                type="number"
+                min={5}
+                max={1440}
+                value={reservationSettings.auto_expire_minutes}
+                onChange={(e) => setReservationSettings((s) => ({ ...s, auto_expire_minutes: Number(e.target.value) || 30 }))}
+                placeholder="30"
+              />
+              <Form.Text className="text-muted">Les réservations en attente expirent après ce délai (5–1440 min).</Form.Text>
+            </div>
+            <div className="col-md-4">
+              <Button variant="primary" size="sm" onClick={saveReservationSettings} disabled={savingReservation}>
+                {savingReservation ? <Spinner animation="border" size="sm" /> : 'Enregistrer'}
+              </Button>
             </div>
           </div>
         </Card.Body>
@@ -223,6 +298,28 @@ export default function Parametres() {
               </Button>
             </div>
           </Form>
+        </Modal.Body>
+      </Modal>
+
+      {/* Modal Code d'accès secrétaire */}
+      <Modal show={!!newSecretaryCode} onHide={() => setNewSecretaryCode(null)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title className="d-flex align-items-center gap-2">
+            <KeyRound size={24} />
+            Code d&apos;accès – Transmettez-le au secrétaire
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p className="text-muted small mb-3">
+            Ce code permet au secrétaire d&apos;accéder au dashboard Formateur depuis son espace. Conservez-le ou transmettez-le, il ne sera plus affiché.
+          </p>
+          <div className="text-center p-4 bg-light rounded-3">
+            <p className="text-muted small mb-1">Code à 6 caractères</p>
+            <p className="fs-2 fw-bold text-primary mb-0" style={{ letterSpacing: 6 }}>{newSecretaryCode}</p>
+          </div>
+          <Button variant="primary" className="w-100 mt-3" onClick={() => setNewSecretaryCode(null)}>
+            J&apos;ai noté le code
+          </Button>
         </Modal.Body>
       </Modal>
 

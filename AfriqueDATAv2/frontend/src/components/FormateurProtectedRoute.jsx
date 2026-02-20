@@ -1,9 +1,11 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getCrossAccessFormateur } from './AccessCodeModal';
 
 export default function FormateurProtectedRoute({ children }) {
   const { isFormateur, isAdmin, loading } = useAuth();
   const location = useLocation();
+  const hasCrossAccess = getCrossAccessFormateur();
 
   if (loading) {
     return (
@@ -13,13 +15,11 @@ export default function FormateurProtectedRoute({ children }) {
     );
   }
 
+  if (isFormateur || (isAdmin && hasCrossAccess)) {
+    return children;
+  }
   if (isAdmin) {
-    return <Navigate to="/" replace state={{ from: location }} />;
+    return <Navigate to="/admin" replace state={{ from: location }} />;
   }
-
-  if (!isFormateur) {
-    return <Navigate to="/formateur/login" replace state={{ from: location }} />;
-  }
-
-  return children;
+  return <Navigate to="/login?mode=formateur" replace state={{ from: location }} />;
 }

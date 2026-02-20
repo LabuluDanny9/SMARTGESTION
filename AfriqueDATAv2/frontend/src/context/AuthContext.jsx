@@ -66,7 +66,7 @@ export function AuthProvider({ children }) {
       try {
         const { data, error } = await supabase
           .from('formateur_profiles')
-          .select('id, formateur_id, formateurs(id, nom_complet, email, telephone, type)')
+          .select('id, formateur_id, code_acces_admin, formateurs(id, nom_complet, email, telephone, type)')
           .eq('id', userId)
           .maybeSingle();
         if (!error && data) return data;
@@ -131,12 +131,26 @@ export function AuthProvider({ children }) {
     });
     const profile = await fetchFormateurProfile(authData.user.id);
     setFormateurProfile(profile);
-    return authData;
+    return { authData, profile };
   };
 
   const signOut = async () => {
+    sessionStorage.removeItem('crossAccessFormateur');
+    sessionStorage.removeItem('crossAccessAdmin');
     await supabase.auth.signOut();
     setFormateurProfile(null);
+  };
+
+  const verifyCodeForFormateurAccess = async (code) => {
+    const { data, error } = await supabase.rpc('verify_admin_to_formateur_access', { code_entered: code });
+    if (error) throw error;
+    return !!data;
+  };
+
+  const verifyCodeForAdminAccess = async (code) => {
+    const { data, error } = await supabase.rpc('verify_formateur_to_admin_access', { code_entered: code });
+    if (error) throw error;
+    return !!data;
   };
 
   const refreshProfile = async () => {
@@ -162,6 +176,8 @@ export function AuthProvider({ children }) {
     signUpFormateur,
     signOut,
     refreshProfile,
+    verifyCodeForFormateurAccess,
+    verifyCodeForAdminAccess,
   };
 
   return (

@@ -22,26 +22,26 @@ import { supabase } from '../../lib/supabase';
 
 const sectionsConfig = [
   { label: null, items: [
-    { path: '/', Icon: LayoutDashboard, label: 'Tableau de bord', badgeKey: null },
-    { path: '/analytics', Icon: BarChart3, label: 'Analytics', badgeKey: null },
+    { path: '/admin', Icon: LayoutDashboard, label: 'Tableau de bord', badgeKey: null },
+    { path: '/admin/analytics', Icon: BarChart3, label: 'Analytics', badgeKey: null },
   ] },
   { label: 'ACADÉMIQUE', items: [
-    { path: '/facultes', Icon: GraduationCap, label: 'Facultés', badgeKey: 'facultes' },
-    { path: '/promotions', Icon: Layers, label: 'Promotions', badgeKey: 'promotions' },
-    { path: '/etudiants', Icon: Users, label: 'Étudiants', badgeKey: 'etudiants' },
-    { path: '/visiteurs', Icon: UserCheck, label: 'Visiteurs', badgeKey: 'visiteurs' },
+    { path: '/admin/facultes', Icon: GraduationCap, label: 'Facultés', badgeKey: 'facultes' },
+    { path: '/admin/promotions', Icon: Layers, label: 'Promotions', badgeKey: 'promotions' },
+    { path: '/admin/etudiants', Icon: Users, label: 'Étudiants', badgeKey: 'etudiants' },
+    { path: '/admin/visiteurs', Icon: UserCheck, label: 'Visiteurs', badgeKey: 'visiteurs' },
   ] },
   { label: 'ACTIVITÉS', items: [
-    { path: '/types-activite', Icon: Tags, label: "Types d'activité", badgeKey: 'types' },
-    { path: '/formateurs', Icon: Users, label: 'Formateurs', badgeKey: null },
-    { path: '/activites', Icon: CalendarDays, label: 'Activités', badgeKey: 'activites' },
-    { path: '/reservations', Icon: CalendarCheck, label: 'Réservations', badgeKey: 'reservations' },
+    { path: '/admin/types-activite', Icon: Tags, label: "Types d'activité", badgeKey: 'types' },
+    { path: '/admin/formateurs', Icon: Users, label: 'Formateurs', badgeKey: null },
+    { path: '/admin/activites', Icon: CalendarDays, label: 'Activités', badgeKey: 'activites' },
+    { path: '/admin/reservations', Icon: CalendarCheck, label: 'Réservations', badgeKey: 'reservations' },
   ] },
   { label: 'FINANCE', items: [
-    { path: '/paiements', Icon: Wallet, label: 'Paiements', badgeKey: 'enAttente' },
-    { path: '/exports', Icon: FileDown, label: 'Exports', badgeKey: null },
+    { path: '/admin/paiements', Icon: Wallet, label: 'Paiements', badgeKey: 'enAttente' },
+    { path: '/admin/exports', Icon: FileDown, label: 'Exports', badgeKey: null },
   ] },
-  { label: 'ADMINISTRATION', items: [{ path: '/parametres', Icon: Settings, label: 'Paramètres', badgeKey: null }] },
+  { label: 'ADMINISTRATION', items: [{ path: '/admin/parametres', Icon: Settings, label: 'Paramètres', badgeKey: null }] },
 ];
 
 export default function Sidebar({ collapsed, onToggle, onNavigate, mobile }) {
@@ -83,7 +83,7 @@ export default function Sidebar({ collapsed, onToggle, onNavigate, mobile }) {
         as={NavLink}
         to={path}
         onClick={handleNavClick}
-        end={path === '/'}
+        end={path === '/admin'}
         className={`d-flex align-items-center rounded-3 px-3 py-2 mb-1 sidebar-nav-link ${collapsed ? 'justify-content-center px-2' : ''}`}
       >
         <Icon className="flex-shrink-0" size={20} strokeWidth={2} />

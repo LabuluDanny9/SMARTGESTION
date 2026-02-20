@@ -142,7 +142,7 @@ export default function Dashboard() {
   const hasSearchResults = searchResults.activities.length > 0 || searchResults.students.length > 0;
   const cards = [
     { label: "Aujourd'hui", value: todayEncaisse.toLocaleString() + ' FC', sublabel: 'encaissé', Icon: DollarSign, color: CARD_COLORS[1], href: '/paiements' },
-    { label: 'Total activités', value: stats.activites, sublabel: null, Icon: CalendarDays, color: CARD_COLORS[0], href: '/activites' },
+    { label: 'Total activités', value: stats.activites, sublabel: null, Icon: CalendarDays, color: CARD_COLORS[0], href: '/admin/activites' },
     { label: 'Participants', value: stats.etudiants + stats.visiteurs, sublabel: `${stats.etudiants} étudiants, ${stats.visiteurs} visiteurs`, Icon: Users, color: CARD_COLORS[2], href: null },
     { label: 'Total encaissé', value: stats.totalEncaisse.toLocaleString() + ' FC', sublabel: null, Icon: DollarSign, color: CARD_COLORS[3], href: '/paiements' },
   ];
@@ -208,7 +208,7 @@ export default function Dashboard() {
                     <h6 className="text-muted small mb-2 d-flex align-items-center"><CalendarDays size={14} className="me-1" /> Activités ({searchResults.activities.length})</h6>
                     <div className="d-flex flex-column gap-2">
                       {searchResults.activities.map((a) => (
-                        <Link key={a.id} to={`/activites/${a.id}`} className="p-3 rounded-3 border text-dark text-decoration-none card-hover">
+                        <Link key={a.id} to={`/admin/activites/${a.id}`} className="p-3 rounded-3 border text-dark text-decoration-none card-hover">
                           <div className="fw-medium">{a.nom}</div>
                           <small className="text-muted">{a.activity_types?.nom} • {a.date_debut}</small>
                         </Link>
@@ -221,7 +221,7 @@ export default function Dashboard() {
                     <h6 className="text-muted small mb-2 d-flex align-items-center"><Users size={14} className="me-1" /> Participants ({searchResults.students.length})</h6>
                     <div className="d-flex flex-column gap-2">
                       {searchResults.students.map((p) => (
-                        <Link key={p.id} to={`/activites/${p.activity_id}`} className="p-3 rounded-3 border text-dark text-decoration-none card-hover">
+                        <Link key={p.id} to={`/admin/activites/${p.activity_id}`} className="p-3 rounded-3 border text-dark text-decoration-none card-hover">
                           <div className="fw-medium">{p.nom_complet}</div>
                           <small className="text-muted">{p.activities?.nom || 'Activité'} • {Number(p.montant).toLocaleString()} FC</small>
                         </Link>
@@ -236,7 +236,7 @@ export default function Dashboard() {
       )}
 
       {enAttenteCount > 0 && (
-        <Link to="/paiements" className="d-flex align-items-center gap-3 p-4 bg-warning bg-opacity-10 border border-warning rounded-3 text-decoration-none text-dark mb-4 card-hover">
+        <Link to="/admin/paiements" className="d-flex align-items-center gap-3 p-4 bg-warning bg-opacity-10 border border-warning rounded-3 text-decoration-none text-dark mb-4 card-hover">
           <AlertCircle size={28} className="text-warning flex-shrink-0" />
           <div>
             <p className="fw-semibold mb-0">{enAttenteCount} paiement{enAttenteCount > 1 ? 's' : ''} en attente</p>
@@ -344,7 +344,7 @@ export default function Dashboard() {
       <Card className="shadow-sm">
         <Card.Header className="d-flex align-items-center justify-content-between bg-white py-3">
           <Card.Title className="h6 mb-0">Activité récente</Card.Title>
-          <Link to="/paiements" className="small text-primary text-decoration-none fw-medium">Voir tout <i className="bi bi-chevron-right" /></Link>
+          <Link to="/admin/paiements" className="small text-primary text-decoration-none fw-medium">Voir tout <i className="bi bi-chevron-right" /></Link>
         </Card.Header>
         <div className="table-responsive">
           <Table hover className="mb-0 align-middle">

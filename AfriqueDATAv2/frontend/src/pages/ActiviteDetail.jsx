@@ -175,7 +175,7 @@ export default function ActiviteDetail() {
       const { error } = await supabase.from('activities').delete().eq('id', id);
       if (error) throw error;
       toast.success('Activité supprimée.');
-      navigate('/activites');
+      navigate('/admin/activites');
     } catch (err) {
       toast.error(err.message || 'Erreur');
     }
@@ -193,7 +193,7 @@ export default function ActiviteDetail() {
     return (
       <div className="text-center py-16">
         <p className="text-slate-500">Activité introuvable</p>
-        <Link to="/activites" className="mt-4 inline-flex items-center gap-2 text-primary-600 hover:text-primary-700">
+        <Link to="/admin/activites" className="mt-4 inline-flex items-center gap-2 text-primary-600 hover:text-primary-700">
           <ArrowLeft className="w-4 h-4" /> Retour aux activités
         </Link>
       </div>
@@ -203,7 +203,7 @@ export default function ActiviteDetail() {
   return (
     <div className="space-y-6 animate-fade-in">
       <Link
-        to="/activites"
+        to="/admin/activites"
         className="inline-flex items-center gap-2 text-slate-600 hover:text-primary-600 transition-colors text-sm font-medium"
       >
         <ArrowLeft className="w-4 h-4" /> Retour aux activités
@@ -216,7 +216,7 @@ export default function ActiviteDetail() {
               <h1 className="text-xl font-bold text-slate-800 flex-1">{activity.nom}</h1>
               <div className="flex gap-2 shrink-0">
                 <Link
-                  to="/activites"
+                  to="/admin/activites"
                   state={{ editId: id }}
                   className="p-2 rounded-lg text-slate-500 hover:bg-primary-50 hover:text-primary-600 transition-colors"
                   title="Modifier"

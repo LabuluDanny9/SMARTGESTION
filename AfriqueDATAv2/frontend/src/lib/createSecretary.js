@@ -50,13 +50,17 @@ export async function createSecretary(email, password, nom_complet) {
   });
 
   if (insertError) {
-    // Si l'insert échoue, l'utilisateur existe dans auth mais pas en admin
-    // On ne peut pas le supprimer facilement - on informe l'utilisateur
     if (insertError.code === '23505' || insertError.message?.includes('duplicate')) {
       throw new Error('Ce secrétaire existe déjà.');
     }
     throw new Error(insertError.message || 'Erreur à l\'ajout du profil admin');
   }
 
-  return { success: true, id: signUpData.user.id };
+  const { data: profile } = await supabase
+    .from('admin_profiles')
+    .select('code_acces_formateur')
+    .eq('id', signUpData.user.id)
+    .single();
+
+  return { success: true, id: signUpData.user.id, codeAccesFormateur: profile?.code_acces_formateur };
 }

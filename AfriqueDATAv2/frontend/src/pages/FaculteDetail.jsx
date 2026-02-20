@@ -210,7 +210,7 @@ export default function FaculteDetail() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <Link to="/facultes" className="inline-flex items-center gap-2 text-slate-600 hover:text-primary-600 text-sm font-medium">
+      <Link to="/admin/facultes" className="inline-flex items-center gap-2 text-slate-600 hover:text-primary-600 text-sm font-medium">
         <ArrowLeft className="w-4 h-4" /> Retour aux facultés
       </Link>
 
@@ -362,10 +362,10 @@ export default function FaculteDetail() {
             <span className="text-slate-400 text-sm">({pratiques.length})</span>
           </div>
           <div className="d-flex gap-2">
-            <Link to="/formateurs" onClick={(e) => e.stopPropagation()} className="p-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm">
+            <Link to="/admin/formateurs" onClick={(e) => e.stopPropagation()} className="p-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm">
               Formateurs
             </Link>
-            <Link to="/activites" onClick={(e) => e.stopPropagation()} className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg text-sm font-medium">
+            <Link to="/admin/activites" onClick={(e) => e.stopPropagation()} className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg text-sm font-medium">
               Créer une activité
             </Link>
           </div>
@@ -377,7 +377,7 @@ export default function FaculteDetail() {
             ) : (
               <div className="space-y-2">
                 {pratiques.map((a) => (
-                  <Link key={a.id} to={`/activites/${a.id}`} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-primary-200 hover:bg-primary-50/30 transition-colors">
+                  <Link key={a.id} to={`/admin/activites/${a.id}`} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-primary-200 hover:bg-primary-50/30 transition-colors">
                     <div>
                       <p className="font-medium text-slate-800">{a.nom}</p>
                       <p className="text-xs text-slate-500">{a.activity_types?.nom} • {a.date_debut} • {a.formateurs?.nom_complet || 'Sans superviseur'}</p>

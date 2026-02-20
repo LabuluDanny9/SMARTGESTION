@@ -19,8 +19,10 @@ export default function ReserveForm() {
     telephone: '',
     desired_date: '',
     desired_time_start: '',
+    desired_time_end: '',
     duration_minutes: '',
     notes: '',
+    creneau_alternatif: '',
   });
 
   useEffect(() => {
@@ -86,8 +88,10 @@ export default function ReserveForm() {
       const facultyId = form.faculty_id || null;
       const promotionId = form.promotion_id || null;
       const desiredTimeStart = form.desired_time_start || null;
+      const desiredTimeEnd = form.desired_time_end || null;
       const duration = form.duration_minutes ? parseInt(form.duration_minutes, 10) : null;
       const desiredDate = form.desired_date || null;
+      const notesCombined = [form.notes?.trim(), form.creneau_alternatif?.trim() ? `Créneau alternatif souhaité : ${form.creneau_alternatif}` : null].filter(Boolean).join('\n') || null;
 
       const { data: existing } = await supabase
         .from('reservations')
@@ -126,8 +130,9 @@ export default function ReserveForm() {
           telephone: form.telephone.trim(),
           desired_date: desiredDate,
           desired_time_start: desiredTimeStart,
+          desired_time_end: desiredTimeEnd || null,
           duration_minutes: duration,
-          notes: form.notes?.trim() || null,
+          notes: notesCombined,
           status: 'pending',
         },
       ]);
@@ -294,15 +299,37 @@ export default function ReserveForm() {
             </div>
           </div>
 
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Heure fin (optionnel)</label>
+              <input
+                type="time"
+                value={form.desired_time_end}
+                onChange={(e) => setForm({ ...form, desired_time_end: e.target.value })}
+                className="w-full px-4 py-3 rounded-2xl border-2 border-slate-200 bg-white focus:border-primary-500 outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Durée (minutes)</label>
+              <input
+                type="number"
+                min={15}
+                step={15}
+                value={form.duration_minutes}
+                onChange={(e) => setForm({ ...form, duration_minutes: e.target.value })}
+                placeholder={activity.duree_minutes || '60'}
+                className="w-full px-4 py-3 rounded-2xl border-2 border-slate-200 bg-white focus:border-primary-500 outline-none"
+              />
+            </div>
+          </div>
+
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Durée (minutes)</label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Créneau alternatif souhaité</label>
             <input
-              type="number"
-              min={15}
-              step={15}
-              value={form.duration_minutes}
-              onChange={(e) => setForm({ ...form, duration_minutes: e.target.value })}
-              placeholder={activity.duree_minutes || '60'}
+              type="text"
+              value={form.creneau_alternatif}
+              onChange={(e) => setForm({ ...form, creneau_alternatif: e.target.value })}
+              placeholder="Ex : Mardi 14h-16h ou Jeudi matin"
               className="w-full px-4 py-3 rounded-2xl border-2 border-slate-200 bg-white focus:border-primary-500 outline-none"
             />
           </div>

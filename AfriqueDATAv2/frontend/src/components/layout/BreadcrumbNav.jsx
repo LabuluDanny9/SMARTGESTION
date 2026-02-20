@@ -3,6 +3,7 @@ import { ChevronRight, Home } from 'lucide-react';
 
 const PATH_LABELS = {
   '': 'Tableau de bord',
+  admin: 'Administration',
   analytics: 'Analytics',
   facultes: 'Facultés',
   promotions: 'Promotions',

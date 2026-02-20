@@ -89,7 +89,7 @@ export default function Facultes() {
       align: 'right',
       render: (f) => (
         <div className="flex gap-2 justify-end items-center">
-          <Link to={`/facultes/${f.id}`} className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="Départements et promotions">
+          <Link to={`/admin/facultes/${f.id}`} className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="Départements et promotions">
             <ChevronRight className="w-4 h-4" />
           </Link>
           <button

@@ -56,7 +56,7 @@ export default function Activites() {
       const a = activities.find((x) => x.id === editId);
       if (a) {
         openEdit(a);
-        navigate('/activites', { replace: true, state: {} });
+        navigate('/admin/activites', { replace: true, state: {} });
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -247,7 +247,7 @@ export default function Activites() {
             key={a.id}
             className="group relative bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-md hover:border-primary-100 transition-all duration-200"
           >
-            <Link to={`/activites/${a.id}`} className="block">
+            <Link to={`/admin/activites/${a.id}`} className="block">
               <div className="flex justify-between items-start">
                 <div className="min-w-0 flex-1 pr-8">
                   <h3 className="font-semibold text-slate-800 truncate">{a.nom}</h3>
@@ -499,7 +499,7 @@ export default function Activites() {
               <Button variant="outline-primary" className="w-100 d-flex align-items-center justify-content-center gap-2 mt-3" onClick={() => { navigator.clipboard.writeText(qrUrl); toast.success('Lien copié !'); }}>
                 <Copy className="w-4 h-4" /> Copier le lien
               </Button>
-              <Link to={`/activites/${modal.item.id}`} className="btn btn-primary mt-3 w-100 d-inline-flex align-items-center justify-content-center gap-2">
+              <Link to={`/admin/activites/${modal.item.id}`} className="btn btn-primary mt-3 w-100 d-inline-flex align-items-center justify-content-center gap-2">
                   Voir l'activité <ChevronRight className="w-4 h-4" />
                 </Link>
               <Button variant="link" className="w-100 mt-2 text-muted text-decoration-none" onClick={() => setModal({ open: false, mode: 'qr', item: null })}>
