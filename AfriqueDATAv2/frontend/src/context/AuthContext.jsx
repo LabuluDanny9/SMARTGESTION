@@ -34,6 +34,7 @@ export function AuthProvider({ children }) {
       async (_event, session) => {
         setUser(session?.user ?? null);
         if (session?.user) {
+          setLoading(true);
           const [adminP, formateurP] = await Promise.all([
             fetchAdminProfile(session.user.id),
             fetchFormateurProfile(session.user.id),
@@ -45,6 +46,7 @@ export function AuthProvider({ children }) {
           setAdminProfile(null);
           setFormateurProfile(null);
         }
+        setLoading(false);
       }
     );
 
@@ -59,18 +61,21 @@ export function AuthProvider({ children }) {
     return data;
   }
 
-  async function fetchFormateurProfile(userId) {
-    try {
-      const { data, error } = await supabase
-        .from('formateur_profiles')
-        .select('id, formateur_id, formateurs(id, nom_complet, email, telephone, type)')
-        .eq('id', userId)
-        .maybeSingle();
-      if (error) return null;
-      return data;
-    } catch {
-      return null;
+  async function fetchFormateurProfile(userId, retries = 2) {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const { data, error } = await supabase
+          .from('formateur_profiles')
+          .select('id, formateur_id, formateurs(id, nom_complet, email, telephone, type)')
+          .eq('id', userId)
+          .maybeSingle();
+        if (!error && data) return data;
+        if (attempt < retries) await new Promise((r) => setTimeout(r, 300));
+      } catch {
+        if (attempt < retries) await new Promise((r) => setTimeout(r, 300));
+      }
     }
+    return null;
   }
 
   async function fetchAdminProfileWithRetry(userId, maxRetries = 3) {

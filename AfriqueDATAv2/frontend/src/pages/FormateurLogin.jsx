@@ -30,7 +30,7 @@ export default function FormateurLogin() {
     try {
       await signInFormateur(email, password);
       toast.success('Connexion réussie');
-      navigate('/formateur', { replace: true });
+      setTimeout(() => navigate('/formateur', { replace: true }), 150);
     } catch (err) {
       toast.error(err.message || 'Identifiants incorrects.');
     } finally {
@@ -48,7 +48,7 @@ export default function FormateurLogin() {
     try {
       await signUpFormateur(email, password);
       toast.success('Compte activé ! Vérifiez votre email si nécessaire.');
-      navigate('/formateur', { replace: true });
+      setTimeout(() => navigate('/formateur', { replace: true }), 150);
     } catch (err) {
       toast.error(err.message || 'Erreur lors de l\'activation.');
     } finally {
