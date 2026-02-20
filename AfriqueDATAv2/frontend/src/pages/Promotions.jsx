@@ -136,7 +136,7 @@ export default function Promotions() {
           .single();
         if (error) {
           if (error.code === '23505' || error.message?.includes('unique') || error.message?.includes('duplicate')) {
-            throw new Error('Une promotion avec ce nom existe déjà dans cette faculté.');
+            throw new Error('Une promotion avec ce nom existe déjà dans ce département.');
           }
           if (error.code === '42501' || error.message?.toLowerCase().includes('policy') || error.message?.toLowerCase().includes('row level')) {
             throw new Error('Accès refusé. Vérifiez que vous êtes connecté en tant qu\'administrateur.');
@@ -156,7 +156,7 @@ export default function Promotions() {
     } catch (err) {
       const msg = err?.message || '';
       if (msg.includes('duplicate') || msg.includes('unique')) {
-        toast.error('Une promotion avec ce nom existe déjà dans cette faculté.');
+        toast.error('Une promotion avec ce nom existe déjà dans ce département.');
       } else {
         toast.error(msg || 'Erreur lors de l\'enregistrement');
       }

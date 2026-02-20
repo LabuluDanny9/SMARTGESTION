@@ -140,7 +140,7 @@ export default function FaculteDetail() {
         const { error } = await supabase.from('promotions').insert([payload]);
         if (error) {
           if (error.code === '23505' || error.message?.includes('unique') || error.message?.includes('duplicate')) {
-            throw new Error('Une promotion avec ce nom existe déjà dans cette faculté.');
+            throw new Error('Une promotion avec ce nom existe déjà dans ce département.');
           }
           if (error.code === '23503' || error.message?.includes('foreign key')) {
             throw new Error('Département invalide. Vérifiez que le département existe.');
