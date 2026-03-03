@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { FileText, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Card, Form, InputGroup } from 'react-bootstrap';
 
 export default function AuditLogs() {

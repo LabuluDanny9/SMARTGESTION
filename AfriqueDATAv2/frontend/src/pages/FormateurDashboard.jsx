@@ -16,7 +16,6 @@ import {
   Plus,
   TrendingUp,
   MapPin,
-  User,
   FileCheck,
   KeyRound,
   Bell,
@@ -61,7 +60,7 @@ export default function FormateurDashboard() {
   const formateurId = formateurProfile?.formateur_id || formateurData?.id;
 
   const [activities, setActivities] = useState([]);
-  const [reservations, setReservations] = useState([]);
+  const [, setReservations] = useState([]);
   const [reservationRequests, setReservationRequests] = useState([]);
   const [allRequests, setAllRequests] = useState([]);
   const [notifications, setNotifications] = useState([]);
