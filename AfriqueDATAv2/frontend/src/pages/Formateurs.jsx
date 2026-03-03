@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Plus, Pencil, Trash2, Users } from 'lucide-react';
+import { createFormateurAccess } from '../lib/createFormateur';
+import { Plus, Pencil, Trash2, Users, KeyRound, QrCode, Copy } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import toast from 'react-hot-toast';
 
 const TYPE_FORMATEUR = { formateur: 'Formateur', enseignant: 'Enseignant', assistant: 'Assistant' };
@@ -9,7 +11,10 @@ export default function Formateurs() {
   const [formateurs, setFormateurs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState({ open: false, item: null });
-  const [form, setForm] = useState({ nom_complet: '', email: '', telephone: '', type: 'formateur', specialite: '' });
+  const [form, setForm] = useState({ nom_complet: '', email: '', telephone: '', type: 'formateur', specialite: '', password: '' });
+  const [activateModal, setActivateModal] = useState({ open: false, item: null, password: '' });
+  const [generatedLink, setGeneratedLink] = useState(null);
+  const [activating, setActivating] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -17,12 +22,13 @@ export default function Formateurs() {
 
   async function loadData() {
     try {
-      const { data, error } = await supabase
-        .from('formateurs')
-        .select('*')
-        .eq('actif', true)
-        .order('nom_complet');
-      setFormateurs(error ? [] : (data || []));
+      const [formRes, profileRes] = await Promise.all([
+        supabase.from('formateurs').select('*').eq('actif', true).order('nom_complet'),
+        supabase.from('formateur_profiles').select('formateur_id'),
+      ]);
+      const formateursData = formRes.data || [];
+      const hasAccessIds = new Set((profileRes.data || []).map((p) => p.formateur_id));
+      setFormateurs(formateursData.map((f) => ({ ...f, hasAccess: hasAccessIds.has(f.id) })));
     } catch {
       setFormateurs([]);
     } finally {
@@ -48,10 +54,31 @@ export default function Formateurs() {
         toast.success('Formateur ajouté');
       }
       setModal({ open: false, item: null });
-      setForm({ nom_complet: '', email: '', telephone: '', type: 'formateur', specialite: '' });
+      setForm({ nom_complet: '', email: '', telephone: '', type: 'formateur', specialite: '', password: '' });
       loadData();
     } catch (err) {
       toast.error(err?.message || 'Erreur');
+    }
+  }
+
+  async function handleActivate(e) {
+    e.preventDefault();
+    const item = activateModal.item;
+    if (!item?.email || !activateModal.password) {
+      toast.error('Email et mot de passe requis.');
+      return;
+    }
+    setActivating(true);
+    try {
+      const { loginUrl } = await createFormateurAccess(item.id, item.email, activateModal.password);
+      setGeneratedLink(loginUrl);
+      setActivateModal({ open: false, item: null, password: '' });
+      toast.success('Accès activé ! Transmettez le lien et le mot de passe au formateur.');
+      loadData();
+    } catch (err) {
+      toast.error(err?.message || 'Erreur');
+    } finally {
+      setActivating(false);
     }
   }
 
@@ -112,7 +139,20 @@ export default function Formateurs() {
                     {f.telephone && <p className="text-muted small mb-0">{f.telephone}</p>}
                     {f.specialite && <p className="text-slate-500 small mt-1 mb-0">{f.specialite}</p>}
                   </div>
-                  <div className="d-flex gap-1">
+                  <div className="d-flex gap-1 flex-wrap">
+                    {!f.hasAccess && f.email && (
+                      <button
+                        type="button"
+                        onClick={() => setActivateModal({ open: true, item: f, password: '' })}
+                        className="btn btn-sm btn-success d-flex align-items-center gap-1"
+                        title="Activer l'accès et générer lien/QR"
+                      >
+                        <KeyRound size={14} /> Activer
+                      </button>
+                    )}
+                    {f.hasAccess && (
+                      <span className="badge bg-success me-1">Accès activé</span>
+                    )}
                     <button
                       type="button"
                       onClick={() => {
@@ -139,6 +179,66 @@ export default function Formateurs() {
           ))
         )}
       </div>
+
+      {/* Modal Activer */}
+      {activateModal.open && (
+        <div className="modal-overlay" onClick={() => setActivateModal({ open: false })}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold mb-4">Activer l&apos;accès formateur</h2>
+            <p className="text-muted small mb-3">
+              Définissez un mot de passe pour <strong>{activateModal.item?.nom_complet}</strong> ({activateModal.item?.email}). Un lien de connexion sera généré.
+            </p>
+            <form onSubmit={handleActivate}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Mot de passe *</label>
+                <input
+                  type="password"
+                  value={activateModal.password}
+                  onChange={(e) => setActivateModal({ ...activateModal, password: e.target.value })}
+                  required
+                  minLength={6}
+                  className="input-field"
+                  placeholder="Minimum 6 caractères"
+                />
+              </div>
+              <div className="d-flex gap-3 justify-content-end">
+                <button type="button" onClick={() => setActivateModal({ open: false })} className="btn btn-outline-secondary">Annuler</button>
+                <button type="submit" className="btn btn-primary" disabled={activating}>
+                  {activating ? 'Activation...' : 'Activer et générer le lien'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Lien / QR généré */}
+      {generatedLink && (
+        <div className="modal-overlay" onClick={() => setGeneratedLink(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 420 }}>
+            <h2 className="text-lg font-semibold mb-4 d-flex align-items-center gap-2">
+              <QrCode size={24} /> Lien et QR code générés
+            </h2>
+            <p className="text-muted small mb-3">Transmettez ce lien et le mot de passe au formateur. Il pourra se connecter.</p>
+            <div className="d-flex gap-3 align-items-start mb-4">
+              <div className="bg-white p-3 rounded border">
+                <QRCodeSVG value={generatedLink} size={120} level="M" />
+              </div>
+              <div className="flex-grow-1">
+                <input readOnly value={generatedLink} className="form-control form-control-sm mb-2" />
+                <button
+                  type="button"
+                  onClick={() => { navigator.clipboard.writeText(generatedLink); toast.success('Lien copié'); }}
+                  className="btn btn-sm btn-outline-primary"
+                >
+                  <Copy size={14} className="me-1" /> Copier
+                </button>
+              </div>
+            </div>
+            <button type="button" onClick={() => setGeneratedLink(null)} className="btn btn-primary w-100">Fermer</button>
+          </div>
+        </div>
+      )}
 
       {/* Modal */}
       {modal.open && (

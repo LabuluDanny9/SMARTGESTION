@@ -21,5 +21,5 @@ export default function FormateurProtectedRoute({ children }) {
   if (isAdmin) {
     return <Navigate to="/admin" replace state={{ from: location }} />;
   }
-  return <Navigate to="/login?mode=formateur" replace state={{ from: location }} />;
+  return <Navigate to="/formateur/login" replace state={{ from: location }} />;
 }

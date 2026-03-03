@@ -9,6 +9,7 @@ const PATH_LABELS = {
   promotions: 'Promotions',
   etudiants: 'Étudiants',
   visiteurs: 'Visiteurs',
+  abonner: 'Abonner',
   activites: 'Activités',
   formateurs: 'Formateurs',
   'types-activite': "Types d'activité",
@@ -16,6 +17,8 @@ const PATH_LABELS = {
   paiements: 'Paiements',
   exports: 'Exports',
   parametres: 'Paramètres',
+  'audit-logs': 'Audit Logs',
+  annonces: 'Annonces',
 };
 
 export default function BreadcrumbNav() {

@@ -1,12 +1,18 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 export default function FormateurLogin() {
+  const [searchParams] = useSearchParams();
   const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  useEffect(() => {
+    const emailParam = searchParams.get('email');
+    if (emailParam) setEmail(decodeURIComponent(emailParam));
+  }, [searchParams]);
   const [loading, setLoading] = useState(false);
   const { signInFormateur, signUpFormateur, isFormateur, loading: authLoading } = useAuth();
   const navigate = useNavigate();

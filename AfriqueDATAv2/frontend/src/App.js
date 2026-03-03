@@ -21,11 +21,16 @@ import Paiements from './pages/Paiements';
 import Exports from './pages/Exports';
 import Parametres from './pages/Parametres';
 import Analytics from './pages/Analytics';
+import Abonner from './pages/Abonner';
 import InscriptionForm from './pages/InscriptionForm';
 import ReserveForm from './pages/ReserveForm';
 import ReservationCalendrier from './pages/ReservationCalendrier';
 import Reservations from './pages/Reservations';
+import ReservationsDashboard from './pages/ReservationsDashboard';
+import AuditLogs from './pages/AuditLogs';
+import Annonces from './pages/Annonces';
 import FormateurDashboard from './pages/FormateurDashboard';
+import FormateurLogin from './pages/FormateurLogin';
 import ErrorBoundary from './components/ErrorBoundary';
 import './App.css';
 
@@ -46,7 +51,8 @@ function App() {
           <Route path="/inscription" element={<InscriptionForm />} />
           <Route path="/reserve/:activityId" element={<ReserveForm />} />
           <Route path="/reserve" element={<ReservationCalendrier />} />
-          {/* Formateur - protégé */}
+          {/* Formateur - login (lien/QR) puis dashboard */}
+          <Route path="/formateur/login" element={<FormateurLogin />} />
           <Route path="/formateur" element={<ErrorBoundary><FormateurProtectedRoute><FormateurDashboard /></FormateurProtectedRoute></ErrorBoundary>} />
           {/* Admin - protégé */}
           <Route
@@ -64,10 +70,14 @@ function App() {
             <Route path="promotions" element={<Promotions />} />
             <Route path="etudiants" element={<Etudiants />} />
             <Route path="visiteurs" element={<Visiteurs />} />
+            <Route path="abonner" element={<Abonner />} />
             <Route path="formateurs" element={<Formateurs />} />
             <Route path="activites" element={<Activites />} />
             <Route path="activites/:id" element={<ActiviteDetail />} />
-            <Route path="reservations" element={<Reservations />} />
+            <Route path="reservations" element={<ReservationsDashboard />} />
+            <Route path="reservations-legacy" element={<Reservations />} />
+            <Route path="audit-logs" element={<AuditLogs />} />
+            <Route path="annonces" element={<Annonces />} />
             <Route path="types-activite" element={<TypesActivite />} />
             <Route path="paiements" element={<Paiements />} />
             <Route path="exports" element={<Exports />} />

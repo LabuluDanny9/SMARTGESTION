@@ -8,6 +8,7 @@ import {
   Layers,
   Users,
   UserCheck,
+  UserPlus,
   Tags,
   CalendarDays,
   Wallet,
@@ -17,31 +18,41 @@ import {
   ChevronRight,
   Sparkles,
   CalendarCheck,
+  Megaphone,
+  FileText,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 const sectionsConfig = [
   { label: null, items: [
-    { path: '/admin', Icon: LayoutDashboard, label: 'Tableau de bord', badgeKey: null },
-    { path: '/admin/analytics', Icon: BarChart3, label: 'Analytics', badgeKey: null },
+    { path: '/admin', Icon: LayoutDashboard, label: 'Dashboard', badgeKey: null },
+    { path: '/admin/analytics', Icon: BarChart3, label: 'Statistiques', badgeKey: null },
+  ] },
+  { label: 'RÉSERVATIONS', items: [
+    { path: '/admin/reservations', Icon: CalendarCheck, label: 'Réservations', badgeKey: 'reservations' },
+    { path: '/reserve', Icon: CalendarDays, label: 'Calendrier public', badgeKey: null, external: true },
   ] },
   { label: 'ACADÉMIQUE', items: [
     { path: '/admin/facultes', Icon: GraduationCap, label: 'Facultés', badgeKey: 'facultes' },
     { path: '/admin/promotions', Icon: Layers, label: 'Promotions', badgeKey: 'promotions' },
     { path: '/admin/etudiants', Icon: Users, label: 'Étudiants', badgeKey: 'etudiants' },
     { path: '/admin/visiteurs', Icon: UserCheck, label: 'Visiteurs', badgeKey: 'visiteurs' },
+    { path: '/admin/abonner', Icon: UserPlus, label: 'Abonner', badgeKey: null },
   ] },
   { label: 'ACTIVITÉS', items: [
     { path: '/admin/types-activite', Icon: Tags, label: "Types d'activité", badgeKey: 'types' },
     { path: '/admin/formateurs', Icon: Users, label: 'Formateurs', badgeKey: null },
     { path: '/admin/activites', Icon: CalendarDays, label: 'Activités', badgeKey: 'activites' },
-    { path: '/admin/reservations', Icon: CalendarCheck, label: 'Réservations', badgeKey: 'reservations' },
   ] },
   { label: 'FINANCE', items: [
     { path: '/admin/paiements', Icon: Wallet, label: 'Paiements', badgeKey: 'enAttente' },
     { path: '/admin/exports', Icon: FileDown, label: 'Exports', badgeKey: null },
   ] },
-  { label: 'ADMINISTRATION', items: [{ path: '/admin/parametres', Icon: Settings, label: 'Paramètres', badgeKey: null }] },
+  { label: 'ADMINISTRATION', items: [
+    { path: '/admin/annonces', Icon: Megaphone, label: 'Annonces', badgeKey: null },
+    { path: '/admin/audit-logs', Icon: FileText, label: 'Audit Logs', badgeKey: null },
+    { path: '/admin/parametres', Icon: Settings, label: 'Paramètres', badgeKey: null },
+  ] },
 ];
 
 export default function Sidebar({ collapsed, onToggle, onNavigate, mobile }) {
@@ -55,7 +66,7 @@ export default function Sidebar({ collapsed, onToggle, onNavigate, mobile }) {
           supabase.from('participations').select('id').eq('statut_paiement', 'en_attente'),
           supabase.from('students').select('id', { count: 'exact', head: true }),
           supabase.from('visitors').select('id', { count: 'exact', head: true }),
-          supabase.from('reservations').select('id').eq('status', 'pending').catch(() => ({ data: [] })),
+          supabase.from('reservations').select('id').eq('status', 'pending').then((r) => r).catch(() => ({ data: [] })),
         ]);
         setBadges({
           activites: act.count || 0,
@@ -76,9 +87,20 @@ export default function Sidebar({ collapsed, onToggle, onNavigate, mobile }) {
   };
 
   const renderNavLink = (item) => {
-    const { path, Icon, label, badgeKey } = item;
+    const { path, Icon, label, badgeKey, external } = item;
     const count = badgeKey ? badges[badgeKey] : null;
-    const link = (
+    const link = external ? (
+      <a
+        href={path}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`d-flex align-items-center rounded-3 px-3 py-2 mb-1 sidebar-nav-link text-decoration-none ${collapsed ? 'justify-content-center px-2' : ''}`}
+        onClick={handleNavClick}
+      >
+        <Icon className="flex-shrink-0" size={20} strokeWidth={2} />
+        {!collapsed && <span className="flex-grow-1 text-truncate ms-2">{label}</span>}
+      </a>
+    ) : (
       <Nav.Link
         as={NavLink}
         to={path}

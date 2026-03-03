@@ -55,7 +55,7 @@ export default function Portal() {
 
         <button
           type="button"
-          onClick={() => navigate('/login?mode=formateur')}
+          onClick={() => navigate('/formateur/login')}
           className="group p-8 rounded-2xl bg-white border-2 border-slate-100 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 text-left"
         >
           <div className="w-14 h-14 rounded-xl bg-indigo-100 group-hover:bg-indigo-200 flex items-center justify-center mb-4 transition-colors">
