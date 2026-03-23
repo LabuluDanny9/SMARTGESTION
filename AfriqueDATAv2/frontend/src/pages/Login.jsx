@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { getSupabaseUserMessage } from '../lib/supabaseErrors';
 import toast from 'react-hot-toast';
 
 export default function Login() {
@@ -44,7 +45,7 @@ export default function Login() {
       toast.success('Connexion réussie');
       navigate(from || '/', { replace: true });
     } catch (err) {
-      toast.error(err.message || 'Identifiants incorrects. Vérifiez que vous êtes administrateur.');
+      toast.error(getSupabaseUserMessage(err) || 'Identifiants incorrects. Vérifiez que vous êtes administrateur.');
     } finally {
       setLoading(false);
     }
@@ -65,7 +66,7 @@ export default function Login() {
       toast.success('Vérifiez votre boîte email pour réinitialiser le mot de passe.');
       setForgotMode(false);
     } catch (err) {
-      toast.error(err.message || 'Erreur lors de l\'envoi.');
+      toast.error(getSupabaseUserMessage(err) || 'Erreur lors de l\'envoi.');
     } finally {
       setLoading(false);
     }
@@ -91,7 +92,7 @@ export default function Login() {
       setMode('login');
       setPassword('');
     } catch (err) {
-      toast.error(err.message || 'Erreur lors de la création du compte');
+      toast.error(getSupabaseUserMessage(err) || 'Erreur lors de la création du compte');
     } finally {
       setLoading(false);
     }

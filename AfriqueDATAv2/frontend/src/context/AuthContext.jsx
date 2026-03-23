@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { getSupabaseUserMessage } from '../lib/supabaseErrors';
 
 const AuthContext = createContext(null);
 
@@ -89,7 +90,7 @@ export function AuthProvider({ children }) {
 
   const signIn = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
+    if (error) throw new Error(getSupabaseUserMessage(error));
     await new Promise((r) => setTimeout(r, 200));
     const profile = await fetchAdminProfileWithRetry(data.user.id);
     if (!profile) {
@@ -101,7 +102,7 @@ export function AuthProvider({ children }) {
 
   const signInFormateur = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
+    if (error) throw new Error(getSupabaseUserMessage(error));
     await new Promise((r) => setTimeout(r, 200));
     const profile = await fetchFormateurProfile(data.user.id);
     if (!profile) {
@@ -122,7 +123,7 @@ export function AuthProvider({ children }) {
     if (!formateur) throw new Error('Votre email n\'est pas enregistré comme formateur. Contactez le secrétariat.');
 
     const { data: authData, error } = await supabase.auth.signUp({ email, password });
-    if (error) throw error;
+    if (error) throw new Error(getSupabaseUserMessage(error));
     if (!authData.user) throw new Error('Erreur lors de la création du compte');
 
     await supabase.from('formateur_profiles').insert({

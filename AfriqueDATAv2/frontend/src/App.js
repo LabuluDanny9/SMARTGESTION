@@ -32,6 +32,7 @@ import Annonces from './pages/Annonces';
 import FormateurDashboard from './pages/FormateurDashboard';
 import FormateurLogin from './pages/FormateurLogin';
 import ErrorBoundary from './components/ErrorBoundary';
+import SupabaseConfigBanner from './components/SupabaseConfigBanner';
 import './App.css';
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
     <BrowserRouter>
       <ThemeProvider>
       <AuthProvider>
+        <SupabaseConfigBanner />
         <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
         <Routes>
           {/* Portail d'entrée - choix du mode */}

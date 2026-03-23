@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { getSupabaseUserMessage } from '../lib/supabaseErrors';
 import toast from 'react-hot-toast';
 import { KeyRound } from 'lucide-react';
 
@@ -58,7 +59,7 @@ export default function UnifiedLogin() {
         setTimeout(() => navigate('/admin', { replace: true }), 150);
       }
     } catch (err) {
-      toast.error(err?.message || 'Identifiants incorrects.');
+      toast.error(getSupabaseUserMessage(err) || 'Identifiants incorrects.');
     } finally {
       setLoading(false);
     }
@@ -79,7 +80,7 @@ export default function UnifiedLogin() {
       setFormateurCodeModal(code);
       toast.success('Compte activé !');
     } catch (err) {
-      toast.error(err?.message || 'Erreur lors de l\'activation.');
+      toast.error(getSupabaseUserMessage(err) || 'Erreur lors de l\'activation.');
     } finally {
       setLoading(false);
     }
@@ -100,7 +101,7 @@ export default function UnifiedLogin() {
       toast.success('Vérifiez votre boîte email.');
       setForgotMode(false);
     } catch (err) {
-      toast.error(err?.message || 'Erreur');
+      toast.error(getSupabaseUserMessage(err) || 'Erreur');
     } finally {
       setLoading(false);
     }
@@ -130,7 +131,7 @@ export default function UnifiedLogin() {
       setSubMode('login');
       setPassword('');
     } catch (err) {
-      toast.error(err?.message || 'Erreur');
+      toast.error(getSupabaseUserMessage(err) || 'Erreur');
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getSupabaseUserMessage } from '../lib/supabaseErrors';
 import toast from 'react-hot-toast';
 
 export default function FormateurLogin() {
@@ -38,7 +39,7 @@ export default function FormateurLogin() {
       toast.success('Connexion réussie');
       setTimeout(() => navigate('/formateur', { replace: true }), 150);
     } catch (err) {
-      toast.error(err.message || 'Identifiants incorrects.');
+      toast.error(getSupabaseUserMessage(err) || 'Identifiants incorrects.');
     } finally {
       setLoading(false);
     }
@@ -56,7 +57,7 @@ export default function FormateurLogin() {
       toast.success('Compte activé ! Vérifiez votre email si nécessaire.');
       setTimeout(() => navigate('/formateur', { replace: true }), 150);
     } catch (err) {
-      toast.error(err.message || 'Erreur lors de l\'activation.');
+      toast.error(getSupabaseUserMessage(err) || 'Erreur lors de l\'activation.');
     } finally {
       setLoading(false);
     }
